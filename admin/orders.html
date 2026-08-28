@@ -6,6 +6,128 @@
     <title>Orders Management — XORONIQ Admin</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        /* Order Details Modal & Slide-over Drawer */
+        .order-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 1100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .order-modal-backdrop.active {
+            display: flex;
+        }
+        .order-modal-container {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: var(--radius-2xl);
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            animation: modalSlideUp 0.25s ease-out;
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .order-modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0F172A;
+        }
+        .order-modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .order-detail-card {
+            background: #0F172A;
+            border: 1px solid #334155;
+            border-radius: var(--radius-xl);
+            padding: 20px;
+        }
+        .order-detail-title {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94A3B8;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #94A3B8;
+            font-weight: 600;
+        }
+        .detail-value {
+            color: #F8FAFC;
+            font-weight: 700;
+            text-align: right;
+        }
+        .order-item-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid #334155;
+        }
+        .order-item-row:last-child {
+            border-bottom: none;
+        }
+        .order-item-img {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            border: 1px solid #334155;
+            background: #000;
+        }
+        .order-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #334155;
+            background: #0F172A;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .clickable-row {
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+        .clickable-row:hover {
+            background: rgba(255, 255, 255, 0.03) !important;
+        }
+    </style>
 </head>
 <body class="admin-body">
 <div id="admin-sidebar-mount"></div>
@@ -16,9 +138,10 @@
             <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle sidebar">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
-            <span class="admin-header-title">Orders Management</span>
+            <span class="admin-header-title">Orders Management &amp; Fulfillment</span>
         </div>
         <div class="admin-header-actions">
+            <button class="btn btn-ghost btn-sm" id="refresh-orders-btn" style="color:#94A3B8;">🔄 Refresh</button>
             <div class="admin-header-avatar" title="Admin">A</div>
         </div>
     </header>
@@ -30,14 +153,15 @@
                 <button class="status-tab active" data-status="">All Orders</button>
                 <button class="status-tab" data-status="Pending">Pending</button>
                 <button class="status-tab" data-status="Confirmed">Confirmed</button>
+                <button class="status-tab" data-status="Processing">Processing</button>
                 <button class="status-tab" data-status="Shipped">Shipped</button>
                 <button class="status-tab" data-status="Delivered">Delivered</button>
                 <button class="status-tab" data-status="Cancelled">Cancelled</button>
             </div>
 
             <div class="admin-table-header">
-                <input type="text" class="admin-search-input" id="order-search" placeholder="Search by Order ID, Phone, Customer...">
-                <span id="order-count" style="font-size:13px;color:#666">0 Orders</span>
+                <input type="text" class="admin-search-input" id="order-search" placeholder="Search by Order ID, Customer Name, Phone, City, Payment ID...">
+                <span id="order-count" style="font-size:13px;color:#94A3B8">0 Orders</span>
             </div>
 
             <div class="admin-table-wrap">
@@ -46,17 +170,18 @@
                         <tr>
                             <th>Order ID</th>
                             <th>Date</th>
-                            <th>Customer Info</th>
+                            <th>Customer &amp; Phone</th>
+                            <th>Destination</th>
                             <th>Items</th>
-                            <th>Total</th>
+                            <th>Total Amount</th>
                             <th>Payment</th>
-                            <th>Status</th>
-                            <th>Update Status</th>
+                            <th>Fulfillment Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="orders-tbody">
                         <tr>
-                            <td colspan="8" class="table-empty">
+                            <td colspan="9" class="table-empty">
                                 <div class="table-empty-icon">⏳</div>
                                 <div class="table-empty-text">Loading orders...</div>
                             </td>
@@ -68,32 +193,200 @@
     </div>
 </div>
 
+<!-- COMPREHENSIVE ORDER DETAILS MODAL -->
+<div class="order-modal-backdrop" id="order-modal-backdrop">
+    <div class="order-modal-container">
+        
+        <!-- Modal Header -->
+        <div class="order-modal-header">
+            <div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <h2 style="font-family:var(--font-heading);font-size:1.125rem;font-weight:800;color:#FFFFFF;margin:0;" id="modal-order-id">ORD-XOR-10001</h2>
+                    <span id="modal-status-badge" class="badge badge-success">Confirmed</span>
+                </div>
+                <div style="font-size:12px;color:#94A3B8;margin-top:2px;" id="modal-order-date">Placed on Aug 28, 2026 at 2:30 PM</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="close-modal-btn" style="color:#94A3B8;font-size:18px;line-height:1;">✕</button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="order-modal-body">
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                
+                <!-- Customer & Delivery Address Card -->
+                <div class="order-detail-card">
+                    <div class="order-detail-title">📍 Customer &amp; Shipping Address</div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Recipient Name</span>
+                        <span class="detail-value" id="modal-cust-name">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone Number</span>
+                        <span class="detail-value">
+                            <span id="modal-cust-phone">—</span>
+                            <a id="modal-cust-whatsapp" href="#" target="_blank" class="badge" style="background:#25D366;color:#FFF;margin-left:6px;text-decoration:none;font-size:10px;">WhatsApp ↗</a>
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email Address</span>
+                        <span class="detail-value" id="modal-cust-email">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Street Address</span>
+                        <span class="detail-value" id="modal-cust-address" style="max-width:240px;line-height:1.4;">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">City, State</span>
+                        <span class="detail-value" id="modal-cust-city-state">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">PIN Code</span>
+                        <span class="detail-value" id="modal-cust-pincode">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Country</span>
+                        <span class="detail-value">India 🇮🇳</span>
+                    </div>
+                </div>
+
+                <!-- Payment & Transaction Details Card -->
+                <div class="order-detail-card">
+                    <div class="order-detail-title">💳 Payment &amp; Financials</div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Method</span>
+                        <span class="detail-value" id="modal-pay-method">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Status</span>
+                        <span class="detail-value" id="modal-pay-status-badge">
+                            <span class="badge badge-success">Paid</span>
+                        </span>
+                    </div>
+                    <div class="detail-row" id="modal-razorpay-id-row">
+                        <span class="detail-label">Razorpay Payment ID</span>
+                        <span class="detail-value" id="modal-pay-id" style="font-family:monospace;color:#818CF8;font-size:12px;">—</span>
+                    </div>
+                    <div class="detail-row" id="modal-razorpay-order-row">
+                        <span class="detail-label">Razorpay Order ID</span>
+                        <span class="detail-value" id="modal-pay-order-id" style="font-family:monospace;color:#94A3B8;font-size:12px;">—</span>
+                    </div>
+                    
+                    <div style="border-top:1px solid #334155;margin-top:10px;padding-top:10px;">
+                        <div class="detail-row">
+                            <span class="detail-label">Subtotal</span>
+                            <span class="detail-value" id="modal-subtotal">₹0</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Coupon Discount</span>
+                            <span class="detail-value" id="modal-discount" style="color:#10B981;">-₹0</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Shipping Charges</span>
+                            <span class="detail-value" id="modal-shipping">FREE</span>
+                        </div>
+                        <div class="detail-row" style="font-size:15px;padding-top:8px;">
+                            <span class="detail-label" style="color:#FFFFFF;font-weight:800;">Grand Total</span>
+                            <span class="detail-value" id="modal-grand-total" style="color:var(--color-accent);font-size:1.125rem;font-weight:800;">₹0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Ordered Line Items -->
+            <div class="order-detail-card">
+                <div class="order-detail-title">📦 Ordered Line Items</div>
+                <div id="modal-items-container">
+                    <!-- Items rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- Shipment & Tracking Fulfillment Card -->
+            <div class="order-detail-card">
+                <div class="order-detail-title">🚚 Courier &amp; Fulfillment Tracking</div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:flex-end;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label" style="font-size:12px;">Fulfillment Status</label>
+                        <select class="form-select" id="modal-update-status" style="background:#1E293B;border-color:#334155;color:#FFF;">
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                            <option value="Returned">Returned</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label" style="font-size:12px;">Courier Partner</label>
+                        <select class="form-select" id="modal-courier-name" style="background:#1E293B;border-color:#334155;color:#FFF;">
+                            <option value="Delhivery">Delhivery Express</option>
+                            <option value="BlueDart">Blue Dart Express</option>
+                            <option value="Bluedart">Bluedart Express</option>
+                            <option value="Shiprocket">Shiprocket Surface</option>
+                            <option value="DTDC">DTDC Courier</option>
+                            <option value="India Post">India Post Speed Post</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label" style="font-size:12px;">AWB / Tracking Number</label>
+                        <input type="text" class="form-input" id="modal-tracking-number" placeholder="e.g. DLHV987654321" style="background:#1E293B;border-color:#334155;color:#FFF;">
+                    </div>
+
+                    <button class="btn btn-primary btn-sm" id="modal-save-fulfillment-btn" style="height:38px;white-space:nowrap;">
+                        Save Tracking 💾
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="order-modal-footer">
+            <a id="modal-view-public-invoice" href="#" target="_blank" class="btn btn-outline btn-sm" style="color:#94A3B8;border-color:#334155;">
+                🖨️ View / Print Customer Invoice ↗
+            </a>
+            <button class="btn btn-secondary btn-sm" id="modal-close-bottom-btn">Close</button>
+        </div>
+
+    </div>
+</div>
+
 <script type="module">
     import { initAdmin, getAdminSidebarHTML, showToast, formatPrice, formatDate } from '/js/admin.js';
-    import { getOrders, updateOrderStatus } from '/js/db.js';
+    import { getOrders, updateOrder } from '/js/db.js';
 
     let allOrders = [];
     let currentStatusFilter = '';
+    let currentActiveOrder = null;
 
     async function init() {
         const user = await initAdmin();
         if (!user) return;
 
-        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML();
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML('orders');
         initAdmin();
 
         await loadOrders();
         setupFilters();
+        setupModalEvents();
     }
 
     async function loadOrders() {
         const tbody = document.getElementById('orders-tbody');
         try {
-            const { orders } = await getOrders({ pageSize: 100, sortField: 'createdAt', sortDir: 'desc' });
+            const { orders } = await getOrders({ pageSize: 150, sortField: 'createdAt', sortDir: 'desc' });
             allOrders = orders;
-            renderOrders(allOrders);
+            renderOrders(filterOrdersList());
         } catch(e) {
-            tbody.innerHTML = `<tr><td colspan="8" class="table-empty"><div class="table-empty-icon">⚠</div><div class="table-empty-text">Failed to load orders</div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="table-empty"><div class="table-empty-icon">⚠</div><div class="table-empty-text">Failed to load orders: ${e.message}</div></td></tr>`;
         }
     }
 
@@ -102,72 +395,220 @@
         document.getElementById('order-count').textContent = `${orders.length} Order${orders.length === 1 ? '' : 's'}`;
 
         if (!orders.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="table-empty"><div class="table-empty-icon">📦</div><div class="table-empty-text">No orders found</div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="table-empty"><div class="table-empty-icon">📦</div><div class="table-empty-text">No orders found</div></td></tr>`;
             return;
         }
 
-        tbody.innerHTML = orders.map(o => `
-        <tr data-id="${o.id}">
-            <td>
-                <strong>${o.orderId || o.id.slice(0,8).toUpperCase()}</strong>
-            </td>
-            <td><small>${formatDate(o.createdAt)}</small></td>
-            <td>
-                <div><strong>${o.customer?.name || 'Guest'}</strong></div>
-                <div style="font-size:11px;color:#666">${o.customer?.phone || ''} | ${o.shippingAddress?.city || ''}</div>
-            </td>
-            <td>
-                <span title="${(o.items || []).map(i => i.name).join(', ')}">
-                    ${(o.items || []).length} item(s)
-                </span>
-            </td>
-            <td><strong>${formatPrice(o.total)}</strong></td>
-            <td>
-                <span class="badge ${o.paymentMethod === 'COD' ? 'badge-secondary' : 'badge-success'}">${o.paymentMethod || 'COD'}</span>
-            </td>
-            <td>
-                <span class="badge ${getStatusBadge(o.orderStatus)}">${o.orderStatus}</span>
-            </td>
-            <td>
-                <select class="form-select status-select" data-id="${o.id}" style="padding:4px 8px;font-size:12px;width:120px">
-                    <option value="Pending" ${o.orderStatus === 'Pending' ? 'selected' : ''}>Pending</option>
-                    <option value="Confirmed" ${o.orderStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
-                    <option value="Shipped" ${o.orderStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                    <option value="Delivered" ${o.orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                    <option value="Cancelled" ${o.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                </select>
-            </td>
-        </tr>`).join('');
+        tbody.innerHTML = orders.map(o => {
+            const items = o.items || [];
+            const itemCount = items.reduce((sum, i) => sum + (Number(i.quantity) || 1), 0);
+            const isOnline = o.paymentMethod === 'Razorpay' || o.paymentMethod === 'RAZORPAY';
+            const payStatus = o.paymentStatus || (isOnline ? 'Paid' : 'Pending');
 
-        attachStatusChangeListeners();
+            return `
+            <tr class="clickable-row" data-id="${o.id || o.orderId}">
+                <td>
+                    <div style="font-weight:800;color:#F8FAFC;">${o.orderId || o.id}</div>
+                    ${o.trackingNumber ? `<div style="font-size:11px;color:#818CF8;">AWB: ${o.trackingNumber}</div>` : ''}
+                </td>
+                <td><small style="color:#94A3B8;">${formatDate(o.createdAt)}</small></td>
+                <td>
+                    <div style="font-weight:700;color:#F8FAFC;">${o.customer?.name || o.shippingAddress?.name || 'Guest'}</div>
+                    <div style="font-size:12px;color:#94A3B8;">${o.customer?.phone || o.shippingAddress?.phone || '—'}</div>
+                </td>
+                <td>
+                    <div style="font-size:13px;color:#CBD5E1;">${o.shippingAddress?.city || '—'}, ${o.shippingAddress?.state || ''}</div>
+                    <div style="font-size:11px;color:#94A3B8;">PIN: ${o.shippingAddress?.pincode || '—'}</div>
+                </td>
+                <td>
+                    <span class="badge" style="background:#1E293B;color:#CBD5E1;">${itemCount} item${itemCount === 1 ? '' : 's'}</span>
+                </td>
+                <td>
+                    <div style="font-weight:800;color:#F8FAFC;font-size:14px;">${formatPrice(o.total)}</div>
+                </td>
+                <td>
+                    <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start;">
+                        <span class="badge ${isOnline ? 'badge-primary' : 'badge-secondary'}" style="font-size:10px;">${isOnline ? '💳 Razorpay' : '💵 COD'}</span>
+                        <span class="badge ${payStatus === 'Paid' ? 'badge-success' : 'badge-warning'}" style="font-size:9px;">${payStatus}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge ${getStatusBadge(o.orderStatus)}">${o.orderStatus || 'Confirmed'}</span>
+                </td>
+                <td>
+                    <button class="btn btn-dark btn-sm view-details-btn" data-id="${o.id || o.orderId}" style="padding:4px 10px;font-size:12px;">
+                        Inspect ↗
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Attach click listener to inspect order details
+        tbody.querySelectorAll('.clickable-row, .view-details-btn').forEach(el => {
+            el.addEventListener('click', (e) => {
+                const id = el.dataset.id || el.closest('tr')?.dataset.id;
+                if (id) openOrderModal(id);
+            });
+        });
+    }
+
+    function openOrderModal(orderId) {
+        const order = allOrders.find(o => o.id === orderId || o.orderId === orderId);
+        if (!order) return;
+        currentActiveOrder = order;
+
+        document.getElementById('modal-order-id').textContent = order.orderId || order.id;
+        document.getElementById('modal-order-date').textContent = `Placed on ${formatDate(order.createdAt)}`;
+        
+        const statusBadge = document.getElementById('modal-status-badge');
+        statusBadge.className = `badge ${getStatusBadge(order.orderStatus)}`;
+        statusBadge.textContent = order.orderStatus || 'Confirmed';
+
+        // Customer & Address
+        const cust = order.customer || {};
+        const addr = order.shippingAddress || {};
+        const phone = cust.phone || addr.phone || '';
+        const name = cust.name || addr.name || 'Guest Customer';
+
+        document.getElementById('modal-cust-name').textContent = name;
+        document.getElementById('modal-cust-phone').textContent = phone || '—';
+        document.getElementById('modal-cust-email').textContent = cust.email || '—';
+        document.getElementById('modal-cust-address').textContent = addr.addressLine || '—';
+        document.getElementById('modal-cust-city-state').textContent = `${addr.city || '—'}, ${addr.state || '—'}`;
+        document.getElementById('modal-cust-pincode').textContent = addr.pincode || '—';
+
+        const waBtn = document.getElementById('modal-cust-whatsapp');
+        if (phone) {
+            const cleanPhone = phone.replace(/[^0-9]/g, '');
+            waBtn.href = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(`Hello ${name}, regarding your XORONIQ Order #${order.orderId || order.id}:`)}`;
+            waBtn.style.display = 'inline-block';
+        } else {
+            waBtn.style.display = 'none';
+        }
+
+        // Payment & Financials
+        const isOnline = order.paymentMethod === 'Razorpay' || order.paymentMethod === 'RAZORPAY';
+        document.getElementById('modal-pay-method').innerHTML = isOnline 
+            ? '<span style="color:#818CF8;font-weight:700;">💳 Razorpay Standard Web Checkout</span>' 
+            : '<span style="color:#F59E0B;font-weight:700;">💵 Cash on Delivery (COD)</span>';
+
+        const payStatus = order.paymentStatus || (isOnline ? 'Paid' : 'Pending');
+        document.getElementById('modal-pay-status-badge').innerHTML = 
+            `<span class="badge ${payStatus === 'Paid' ? 'badge-success' : 'badge-warning'}">${payStatus}</span>`;
+
+        const rzpPayIdRow = document.getElementById('modal-razorpay-id-row');
+        const rzpOrderIdRow = document.getElementById('modal-razorpay-order-row');
+        if (order.razorpayPaymentId) {
+            rzpPayIdRow.style.display = 'flex';
+            document.getElementById('modal-pay-id').textContent = order.razorpayPaymentId;
+        } else {
+            rzpPayIdRow.style.display = 'none';
+        }
+
+        if (order.razorpayOrderId) {
+            rzpOrderIdRow.style.display = 'flex';
+            document.getElementById('modal-pay-order-id').textContent = order.razorpayOrderId;
+        } else {
+            rzpOrderIdRow.style.display = 'none';
+        }
+
+        document.getElementById('modal-subtotal').textContent = formatPrice(order.subtotal || order.total);
+        document.getElementById('modal-discount').textContent = order.discount ? `-${formatPrice(order.discount)}` : '₹0';
+        document.getElementById('modal-shipping').textContent = (order.shippingFee === 0 || !order.shippingFee) ? 'FREE' : formatPrice(order.shippingFee);
+        document.getElementById('modal-grand-total').textContent = formatPrice(order.total);
+
+        // Render Ordered Items
+        const itemsWrap = document.getElementById('modal-items-container');
+        const items = order.items || [];
+        itemsWrap.innerHTML = items.map(item => `
+            <div class="order-item-row">
+                <img class="order-item-img" src="${item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" alt="${item.name}">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;color:#F8FAFC;font-size:13px;">${item.name}</div>
+                    <div style="font-size:11px;color:#94A3B8;">${item.variantName ? `Variant: ${item.variantName} | ` : ''}SKU: ${item.sku || '—'}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:800;color:#F8FAFC;font-size:13px;">${formatPrice((Number(item.price) || 0) * (Number(item.quantity) || 1))}</div>
+                    <div style="font-size:11px;color:#94A3B8;">${formatPrice(item.price)} × ${item.quantity}</div>
+                </div>
+            </div>
+        `).join('');
+
+        // Fulfillment section
+        document.getElementById('modal-update-status').value = order.orderStatus || 'Confirmed';
+        document.getElementById('modal-courier-name').value = order.courierName || 'Delhivery';
+        document.getElementById('modal-tracking-number').value = order.trackingNumber || '';
+
+        // Invoice link
+        document.getElementById('modal-view-public-invoice').href = `/order-details.html?id=${order.orderId || order.id}`;
+
+        // Show Backdrop
+        document.getElementById('order-modal-backdrop').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('order-modal-backdrop').classList.remove('active');
+        currentActiveOrder = null;
+    }
+
+    function setupModalEvents() {
+        document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+        document.getElementById('modal-close-bottom-btn').addEventListener('click', closeModal);
+        document.getElementById('order-modal-backdrop').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('order-modal-backdrop')) closeModal();
+        });
+
+        // Save fulfillment & tracking changes
+        document.getElementById('modal-save-fulfillment-btn').addEventListener('click', async () => {
+            if (!currentActiveOrder) return;
+            const btn = document.getElementById('modal-save-fulfillment-btn');
+            const newStatus = document.getElementById('modal-update-status').value;
+            const courierName = document.getElementById('modal-courier-name').value;
+            const trackingNumber = document.getElementById('modal-tracking-number').value.trim();
+
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const updatePayload = {
+                    orderStatus: newStatus,
+                    courierName: courierName,
+                    trackingNumber: trackingNumber,
+                    estimatedDelivery: '3-5 Business Days'
+                };
+
+                await updateOrder(currentActiveOrder.id || currentActiveOrder.orderId, updatePayload);
+                
+                // Update local model
+                Object.assign(currentActiveOrder, updatePayload);
+                showToast(`Order updated to "${newStatus}" with tracking #${trackingNumber || 'N/A'}`, 'success');
+                
+                renderOrders(filterOrdersList());
+                openOrderModal(currentActiveOrder.id || currentActiveOrder.orderId);
+            } catch(e) {
+                showToast('Failed to save fulfillment data', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Save Tracking 💾';
+        });
+
+        document.getElementById('refresh-orders-btn').addEventListener('click', async () => {
+            showToast('Refreshing live orders...', 'info');
+            await loadOrders();
+        });
     }
 
     function getStatusBadge(status) {
         switch(status) {
             case 'Delivered': return 'badge-success';
             case 'Confirmed':
+            case 'Processing':
             case 'Shipped': return 'badge-primary';
-            case 'Cancelled': return 'badge-error';
+            case 'Cancelled':
+            case 'Returned': return 'badge-error';
             default: return 'badge-warning';
         }
-    }
-
-    function attachStatusChangeListeners() {
-        document.querySelectorAll('.status-select').forEach(select => {
-            select.addEventListener('change', async () => {
-                const orderId = select.dataset.id;
-                const newStatus = select.value;
-                try {
-                    await updateOrderStatus(orderId, newStatus);
-                    showToast(`Order status updated to ${newStatus}`, 'success');
-                    const order = allOrders.find(o => o.id === orderId);
-                    if (order) order.orderStatus = newStatus;
-                    renderOrders(filterOrdersList());
-                } catch(e) {
-                    showToast('Failed to update status', 'error');
-                }
-            });
-        });
     }
 
     function setupFilters() {
@@ -191,9 +632,13 @@
             const matchesStatus = !currentStatusFilter || o.orderStatus === currentStatusFilter;
             const matchesQuery = !query || 
                 (o.orderId && o.orderId.toLowerCase().includes(query)) ||
+                (o.id && o.id.toLowerCase().includes(query)) ||
                 (o.customer?.name && o.customer.name.toLowerCase().includes(query)) ||
                 (o.customer?.phone && o.customer.phone.includes(query)) ||
-                (o.shippingAddress?.city && o.shippingAddress.city.toLowerCase().includes(query));
+                (o.shippingAddress?.city && o.shippingAddress.city.toLowerCase().includes(query)) ||
+                (o.shippingAddress?.state && o.shippingAddress.state.toLowerCase().includes(query)) ||
+                (o.razorpayPaymentId && o.razorpayPaymentId.toLowerCase().includes(query)) ||
+                (o.trackingNumber && o.trackingNumber.toLowerCase().includes(query));
             return matchesStatus && matchesQuery;
         });
     }

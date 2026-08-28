@@ -152,16 +152,16 @@
                 return;
             }
             container.innerHTML = orders.slice(0, 5).map(o => `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #334155;">
+            <a href="/admin/orders.html" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #334155;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
                 <div>
                     <div style="font-size:13px;font-weight:700;color:#F8FAFC;">Order #${o.orderId || o.id}</div>
-                    <div style="font-size:12px;color:#94A3B8;">${o.customer?.name || 'Customer'}</div>
+                    <div style="font-size:12px;color:#94A3B8;">${o.customer?.name || o.shippingAddress?.name || 'Customer'} • ${o.shippingAddress?.city || 'India'}</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:14px;font-weight:800;color:#F8FAFC;">${formatPrice(o.total)}</div>
-                    <span class="badge badge-success" style="font-size:10px;">${o.orderStatus || 'Confirmed'}</span>
+                    <span class="badge ${o.orderStatus === 'Delivered' ? 'badge-success' : 'badge-primary'}" style="font-size:10px;">${o.orderStatus || 'Confirmed'}</span>
                 </div>
-            </div>`).join('');
+            </a>`).join('');
         } catch(e) {
             container.innerHTML = '<div class="table-empty"><p>Unable to load orders</p></div>';
         }

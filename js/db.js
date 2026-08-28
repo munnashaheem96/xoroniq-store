@@ -443,24 +443,28 @@ export async function getOrders({ customerId, orderStatus, pageSize = 50, sortFi
     return { orders: list.slice(0, pageSize), total: list.length, hasMore: list.length > pageSize };
 }
 
-export async function updateOrderStatus(orderId, newStatus) {
+export async function updateOrder(orderId, updateData) {
     try {
         await updateDoc(doc(db, "orders", orderId), {
-            orderStatus: newStatus,
+            ...updateData,
             updatedAt: serverTimestamp(),
         });
     } catch (err) {
-        console.warn("[db.js] Firestore updateOrderStatus error:", err.message);
+        console.warn("[db.js] Firestore updateOrder error:", err.message);
     }
 
     const local = getLocalStore(LS_KEYS.LOCAL_ORDERS, []);
     const idx = local.findIndex(o => o.id === orderId || o.orderId === orderId);
     if (idx >= 0) {
-        local[idx].orderStatus = newStatus;
-        local[idx].updatedAt = new Date().toISOString();
+        local[idx] = { ...local[idx], ...updateData, updatedAt: new Date().toISOString() };
         setLocalStore(LS_KEYS.LOCAL_ORDERS, local);
     }
 }
+
+export async function updateOrderStatus(orderId, newStatus) {
+    return await updateOrder(orderId, { orderStatus: newStatus });
+}
+
 
 // ─────────────────────────────────────────────
 // COUPONS
@@ -655,7 +659,63 @@ export function toggleLocalWishlist(productId) {
     return list;
 }
 
+export async function getCustomers(pageSize = 100) {
+    let users = [];
+    try {
+        const snap = await getDocs(collection(db, "users"));
+        if (!snap.empty) {
+            users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        }
+    } catch (err) {
+        console.warn("[db.js] Firestore getCustomers error:", err.message);
+    }
+
+    // Also aggregate customer profiles from orders
+    const { orders } = await getOrders({ pageSize: 500 });
+    const customerMap = new Map();
+
+    users.forEach(u => {
+        customerMap.set(u.email || u.id, {
+            id: u.id,
+            name: u.name || "Customer",
+            email: u.email || "—",
+            phone: u.phone || "—",
+            role: u.role || "customer",
+            createdAt: u.createdAt || new Date().toISOString(),
+            totalOrders: 0,
+            totalSpent: 0
+        });
+    });
+
+    orders.forEach(o => {
+        const email = o.customer?.email || o.shippingAddress?.email || o.customer?.phone;
+        if (!email) return;
+
+        if (!customerMap.has(email)) {
+            customerMap.set(email, {
+                id: `cust-${email.replace(/[^a-zA-Z0-9]/g, '')}`,
+                name: o.customer?.name || o.shippingAddress?.name || "Customer",
+                email: o.customer?.email || "—",
+                phone: o.customer?.phone || o.shippingAddress?.phone || "—",
+                city: o.shippingAddress?.city || "—",
+                state: o.shippingAddress?.state || "—",
+                role: "customer",
+                createdAt: o.createdAt || new Date().toISOString(),
+                totalOrders: 1,
+                totalSpent: Number(o.total) || 0
+            });
+        } else {
+            const entry = customerMap.get(email);
+            entry.totalOrders = (entry.totalOrders || 0) + 1;
+            entry.totalSpent = (entry.totalSpent || 0) + (Number(o.total) || 0);
+        }
+    });
+
+    return Array.from(customerMap.values()).slice(0, pageSize);
+}
+
 export async function isAdmin(uid) {
+
     return true;
 }
 
