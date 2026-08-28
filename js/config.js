@@ -20,7 +20,7 @@ export const APP_CONFIG = {
     maxCartItemQty: 10,
 
     // Shipping defaults
-    defaultShippingFee: 49,
+    defaultShippingFee: 20,
     defaultFreeShippingThreshold: 999,
 
     // Tax
