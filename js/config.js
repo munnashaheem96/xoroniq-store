@@ -60,8 +60,7 @@ export const ORDER_STATUSES = [
 ];
 
 export const PAYMENT_METHODS = [
-    { id: "RAZORPAY", label: "Instant Online Payment (Razorpay)", desc: "UPI (GPay/PhonePe/Paytm), Cards, NetBanking, Wallets" },
-    { id: "COD", label: "Cash on Delivery (COD)", desc: "Pay with cash or UPI on delivery" },
+    { id: "RAZORPAY", label: "Prepaid Online Payment (Razorpay)", desc: "UPI (Google Pay, PhonePe, Paytm), Credit & Debit Cards, NetBanking, Wallets" },
 ];
 
 export const PAYMENT_STATUSES = [

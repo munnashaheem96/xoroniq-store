@@ -334,28 +334,6 @@ function bindCheckoutForm() {
                     renderOrderSummary();
                 }
             }
-            return;
-        }
-
-        // ─────────────────────────────────────────────
-        // COD / DIRECT ORDER FLOW
-        // ─────────────────────────────────────────────
-        try {
-            const placedOrder = await createOrder(orderPayload);
-            saveCart([]);
-            sessionStorage.removeItem('xoroniq_applied_coupon');
-
-            showToast("Order placed successfully!", "success");
-            setTimeout(() => {
-                window.location.href = `/order-details.html?id=${placedOrder.orderId || placedOrder.id}`;
-            }, 800);
-        } catch (err) {
-            console.error("[checkout.js] Order placement failed:", err);
-            showToast("Failed to place order. Please try again.", "error");
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                renderOrderSummary();
-            }
         }
     });
 }
