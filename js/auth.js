@@ -175,7 +175,7 @@ export async function logout() {
 export async function requireAdmin() {
     const demoSession = localStorage.getItem("xoroniq_admin_session");
     if (demoSession === "true") {
-        return { uid: "admin-demo-uid", email: "admin@xoroniq.com", displayName: "Store Admin" };
+        return { uid: "admin-demo-uid", email: "admin@xoroniq.store", displayName: "Store Admin" };
     }
 
     return new Promise((resolve) => {
@@ -189,7 +189,7 @@ export async function requireAdmin() {
                 }
             }
             localStorage.setItem("xoroniq_admin_session", "true");
-            resolve({ uid: "admin-local-uid", email: "admin@xoroniq.com", displayName: "Store Owner" });
+            resolve({ uid: "admin-local-uid", email: "admin@xoroniq.store", displayName: "Store Owner" });
         });
     });
 }

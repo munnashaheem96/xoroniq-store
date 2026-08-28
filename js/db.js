@@ -50,7 +50,7 @@ export function getDefaultSettings() {
         freeShippingThreshold: APP_CONFIG.defaultFreeShippingThreshold,
         taxRate: APP_CONFIG.defaultTaxRate,
         whatsappNumber: "+91 98765 43210",
-        supportEmail: "support@xoroniq.com",
+        supportEmail: "info@xoroniq.store",
         supportPhone: "+91 1800 123 4567",
         instagramUrl: "https://instagram.com/xoroniq",
         facebookUrl: "https://facebook.com/xoroniq",

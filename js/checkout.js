@@ -293,7 +293,7 @@ function bindCheckoutForm() {
         const finalTotal = Math.max(0, subtotal - discount + shippingFee);
         const amountInPaise = Math.max(100, Math.round(finalTotal * 100)); // Minimum 100 paise (₹1.00)
 
-        const userEmail = email || authenticatedUser.email || `${cleanPhone}@customer.xoroniq.com`;
+        const userEmail = email || authenticatedUser.email || `${cleanPhone}@customer.xoroniq.store`;
         const customerId = authenticatedUser.uid || `cust_${cleanPhone}`;
 
         const orderPayload = {
@@ -388,7 +388,7 @@ function bindCheckoutForm() {
                     image: "/assets/logo/xoroniq-logo.svg",
                     prefill: {
                         name: name,
-                        email: email || `${cleanPhone}@customer.xoroniq.com`,
+                        email: email || `${cleanPhone}@customer.xoroniq.store`,
                         contact: cleanPhone
                     },
                     theme: {

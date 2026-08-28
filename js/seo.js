@@ -149,7 +149,7 @@ export function generateOrganizationSchema() {
             "caption": "XORONIQ Logo"
         },
         "description": SITE_SEO.defaultDescription,
-        "email": "support@xoroniq.com",
+        "email": "info@xoroniq.store",
         "telephone": "+91-1800-123-4567",
         "address": {
             "@type": "PostalAddress",
