@@ -3,15 +3,24 @@
 import { APP_CONFIG, STATES, PAYMENT_METHODS } from "./config.js";
 import { getCart, saveCart, formatPrice, showToast } from "./app.js";
 import { createOrder, getSettings } from "./db.js";
+import { getCurrentUser, getCurrentProfile, onAuthChange, logout } from "./auth.js";
 
 let storeSettings = null;
 let appliedCoupon = null;
+let authenticatedUser = null;
+let authenticatedProfile = null;
 
 export async function initCheckout() {
     storeSettings = await getSettings();
 
     // Populate state select dropdown
     populateStates();
+
+    // Setup Auth Listener & Banner
+    setupAuthBanner();
+
+    // Restore any draft shipping details
+    restoreShippingDraft();
 
     // Check if cart has items
     const cart = getCart();
@@ -30,6 +39,81 @@ export async function initCheckout() {
     renderOrderSummary();
     renderPaymentMethods();
     bindCheckoutForm();
+}
+
+function setupAuthBanner() {
+    const banner = document.getElementById("checkout-auth-banner");
+    const icon = document.getElementById("auth-banner-icon");
+    const title = document.getElementById("auth-banner-title");
+    const desc = document.getElementById("auth-banner-desc");
+    const actions = document.getElementById("auth-banner-actions");
+
+    onAuthChange((user, profile) => {
+        authenticatedUser = user;
+        authenticatedProfile = profile;
+
+        if (!banner) return;
+
+        if (user) {
+            banner.className = "checkout-auth-banner logged-in";
+            if (icon) icon.innerHTML = "✓";
+            const displayName = profile?.name || user.displayName || user.email?.split("@")[0] || "Customer";
+            if (title) title.textContent = `Signed in as ${displayName}`;
+            if (desc) desc.textContent = `${user.email} • Your order and live shipment tracking will be linked to your account.`;
+            if (actions) {
+                actions.innerHTML = `
+                    <button type="button" class="btn btn-outline btn-sm" id="checkout-logout-btn" style="border-color:#CBD5E1;color:#334155;background:#FFFFFF;">
+                        Sign Out
+                    </button>
+                `;
+                document.getElementById("checkout-logout-btn")?.addEventListener("click", async () => {
+                    await logout();
+                    showToast("Signed out", "info");
+                });
+            }
+
+            // Auto-fill shipping name and email if empty
+            const nameInput = document.getElementById("shipping-name");
+            const emailInput = document.getElementById("shipping-email");
+            const phoneInput = document.getElementById("shipping-phone");
+
+            if (nameInput && !nameInput.value && displayName) {
+                nameInput.value = displayName;
+            }
+            if (emailInput && !emailInput.value && user.email) {
+                emailInput.value = user.email;
+            }
+            if (phoneInput && !phoneInput.value && profile?.phone) {
+                phoneInput.value = profile.phone;
+            }
+        } else {
+            banner.className = "checkout-auth-banner";
+            if (icon) icon.innerHTML = "🔒";
+            if (title) title.textContent = "Customer Login Required to Place Order";
+            if (desc) desc.textContent = "Sign in or create an account to complete your purchase, receive invoice, and track delivery.";
+            if (actions) {
+                actions.innerHTML = `
+                    <a href="/login.html?returnTo=/checkout.html" class="btn btn-outline-white btn-sm">Sign In</a>
+                    <a href="/register.html?returnTo=/checkout.html" class="btn btn-primary btn-sm" style="background:#FFFFFF;color:var(--color-primary);">Create Account</a>
+                `;
+            }
+        }
+    });
+}
+
+function restoreShippingDraft() {
+    try {
+        const draft = JSON.parse(sessionStorage.getItem("xoroniq_checkout_shipping_draft") || "null");
+        if (draft) {
+            if (draft.name && document.getElementById("shipping-name")) document.getElementById("shipping-name").value = draft.name;
+            if (draft.phone && document.getElementById("shipping-phone")) document.getElementById("shipping-phone").value = draft.phone;
+            if (draft.email && document.getElementById("shipping-email")) document.getElementById("shipping-email").value = draft.email;
+            if (draft.address && document.getElementById("shipping-address")) document.getElementById("shipping-address").value = draft.address;
+            if (draft.city && document.getElementById("shipping-city")) document.getElementById("shipping-city").value = draft.city;
+            if (draft.state && document.getElementById("shipping-state")) document.getElementById("shipping-state").value = draft.state;
+            if (draft.pincode && document.getElementById("shipping-pincode")) document.getElementById("shipping-pincode").value = draft.pincode;
+        }
+    } catch(e) {}
 }
 
 function populateStates() {
@@ -151,6 +235,26 @@ function bindCheckoutForm() {
         const pincode = document.getElementById('shipping-pincode')?.value.trim();
         const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'RAZORPAY';
 
+        // 1. Check Authentication Gate
+        if (!authenticatedUser) {
+            // Save draft address so user doesn't lose data
+            sessionStorage.setItem("xoroniq_checkout_shipping_draft", JSON.stringify({
+                name, phone, email, address, city, state, pincode
+            }));
+
+            showToast("Please sign in or create an account to place your order.", "warning");
+            
+            setTimeout(() => {
+                window.location.href = "/login.html?returnTo=/checkout.html";
+            }, 600);
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                renderOrderSummary();
+            }
+            return;
+        }
+
         if (!name || !phone || !address || !city || !state || !pincode) {
             showToast("Please fill in all required shipping fields", "error");
             if (submitBtn) { submitBtn.disabled = false; renderOrderSummary(); }
@@ -189,7 +293,11 @@ function bindCheckoutForm() {
         const finalTotal = Math.max(0, subtotal - discount + shippingFee);
         const amountInPaise = Math.max(100, Math.round(finalTotal * 100)); // Minimum 100 paise (₹1.00)
 
+        const userEmail = email || authenticatedUser.email || `${cleanPhone}@customer.xoroniq.com`;
+        const customerId = authenticatedUser.uid || `cust_${cleanPhone}`;
+
         const orderPayload = {
+            customerId: customerId,
             items: cart,
             subtotal,
             discount,
@@ -200,13 +308,15 @@ function bindCheckoutForm() {
             paymentStatus: paymentMethod === 'COD' ? 'Pending' : 'Paid',
             orderStatus: 'Confirmed',
             customer: {
-                name,
+                uid: customerId,
+                name: name || authenticatedProfile?.name || "Customer",
                 phone: cleanPhone,
-                email: email || `${cleanPhone}@customer.xoroniq.com`,
+                email: userEmail,
             },
             shippingAddress: {
                 name,
                 phone: cleanPhone,
+                email: userEmail,
                 addressLine: address,
                 city,
                 state,
@@ -324,6 +434,7 @@ function bindCheckoutForm() {
                             const placedOrder = await createOrder(orderPayload);
                             saveCart([]);
                             sessionStorage.removeItem('xoroniq_applied_coupon');
+                            sessionStorage.removeItem('xoroniq_checkout_shipping_draft');
                             showToast("Payment verified! Order placed successfully.", "success");
                             setTimeout(() => {
                                 window.location.href = `/order-details.html?id=${placedOrder.orderId || placedOrder.id}`;

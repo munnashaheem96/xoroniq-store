@@ -1,7 +1,7 @@
 // js/product-details.js — Product Detail Page (PDP) Interactive Controller & Dynamic SEO for XORONIQ
 
 import { getProductById, getProducts, getReviews, createReview } from './db.js';
-import { renderProductCard, showToast, formatPrice, calcDiscount, renderStars, getUrlParam, addToCart, updateHeaderBadges } from './app.js';
+import { renderProductCard, showToast, formatPrice, calcDiscount, renderStars, getUrlParam, addToCart, updateHeaderBadges, shareProduct } from './app.js';
 import { APP_CONFIG } from './config.js';
 import { updateMetaTags, injectJsonLd, generateProductSchema, generateBreadcrumbsSchema, SITE_SEO } from './seo.js';
 import { trackViewContent } from './meta.js';
@@ -347,6 +347,51 @@ function bindActionButtons() {
             }
         });
     }
+
+    // Main PDP Share Button
+    const pdpShareBtn = document.getElementById('pdp-share-btn');
+    if (pdpShareBtn) {
+        pdpShareBtn.addEventListener('click', () => {
+            if (currentProduct) {
+                shareProduct({
+                    id: currentProduct.id,
+                    name: currentProduct.name,
+                    price: currentProduct.sellingPrice,
+                    slug: currentProduct.slug || currentProduct.id,
+                    image: currentProduct.primaryImage || currentProduct.images?.[0]
+                });
+            }
+        });
+    }
+
+    // Quick Social Share Strip
+    document.querySelectorAll('.btn-share-quick').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!currentProduct) return;
+            const platform = btn.dataset.platform;
+            const url = window.location.href;
+            const title = `Check out ${currentProduct.name} on XORONIQ for ${formatPrice(currentProduct.sellingPrice)}! ⚡`;
+
+            if (platform === 'whatsapp') {
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + url)}`, '_blank');
+            } else if (platform === 'telegram') {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
+            } else if (platform === 'facebook') {
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+            } else if (platform === 'copy') {
+                try {
+                    await navigator.clipboard.writeText(url);
+                    btn.innerHTML = '<span>✓</span> Copied!';
+                    showToast("Product link copied to clipboard!", "success");
+                    setTimeout(() => {
+                        btn.innerHTML = '<span>🔗</span> Copy Link';
+                    }, 2000);
+                } catch (err) {
+                    showToast("Failed to copy link", "error");
+                }
+            }
+        });
+    });
 }
 
 async function loadReviews(productId) {

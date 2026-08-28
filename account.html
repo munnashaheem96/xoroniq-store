@@ -147,19 +147,38 @@
 </footer>
 
 <script type="module">
-    import { getOrders } from '/js/db.js';
+    import { getOrders, getUserProfile, updateUserProfile } from '/js/db.js';
     import { formatPrice, formatDate, showToast } from '/js/app.js';
     import { auth } from '/js/firebase.js';
-    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
-    import { logout } from '/js/auth.js';
+    import { onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+    import { logout, onAuthChange } from '/js/auth.js';
+
+    let activeUser = null;
 
     async function init() {
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                document.getElementById('user-name').textContent = user.displayName || user.email.split('@')[0];
-                document.getElementById('user-email').textContent = user.email;
-                document.getElementById('user-initial').textContent = (user.displayName || user.email)[0].toUpperCase();
+        onAuthChange(async (user, profile) => {
+            if (!user) {
+                // If not logged in, redirect to login
+                window.location.href = '/login.html?returnTo=/account.html';
+                return;
             }
+
+            activeUser = user;
+            const displayName = profile?.name || user.displayName || user.email.split('@')[0];
+            const initial = displayName[0].toUpperCase();
+
+            document.getElementById('user-name').textContent = displayName;
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-initial').textContent = initial;
+
+            // Fill profile form
+            const profName = document.getElementById('prof-name');
+            const profPhone = document.getElementById('prof-phone');
+            if (profName) profName.value = profile?.name || user.displayName || '';
+            if (profPhone) profPhone.value = profile?.phone || '';
+
+            // Load Orders for this specific customer
+            loadCustomerOrders(user);
         });
 
         // Tab switching
@@ -184,46 +203,75 @@
             contentProfile.style.display = 'block';
         });
 
+        // Profile Form Submit
+        const profileForm = document.getElementById('profile-form');
+        if (profileForm) {
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!activeUser) return;
+
+                const name = document.getElementById('prof-name')?.value.trim();
+                const phone = document.getElementById('prof-phone')?.value.trim();
+
+                try {
+                    await updateProfile(activeUser, { displayName: name });
+                    await updateUserProfile(activeUser.uid, { name, phone, email: activeUser.email });
+                    document.getElementById('user-name').textContent = name;
+                    document.getElementById('user-initial').textContent = name[0].toUpperCase();
+                    showToast("Profile updated successfully!", "success");
+                } catch(err) {
+                    showToast("Failed to update profile", "error");
+                }
+            });
+        }
+
         // Logout
         document.getElementById('auth-action-btn')?.addEventListener('click', async () => {
             await logout();
             showToast("Signed out successfully", "info");
             setTimeout(() => window.location.href = '/', 500);
         });
+    }
 
-        // Load Orders
+    async function loadCustomerOrders(user) {
         const listContainer = document.getElementById('account-orders-list');
-        const { orders } = await getOrders({ pageSize: 20 });
+        if (!listContainer) return;
+
+        listContainer.innerHTML = '<div style="text-align:center;padding:30px;color:var(--color-text-muted);">Loading your order history...</div>';
+
+        const { orders } = await getOrders({ customerId: user.uid, pageSize: 30 });
 
         if (!orders || orders.length === 0) {
             listContainer.innerHTML = `
-                <div style="text-align:center;padding:40px 20px;color:var(--color-text-muted);">
-                    <div style="font-size:3rem;margin-bottom:8px;">📦</div>
-                    <div style="font-weight:700;font-size:16px;color:var(--color-text);margin-bottom:4px;">No orders found</div>
-                    <p style="font-size:13px;margin-bottom:16px;">You haven't placed any orders yet.</p>
-                    <a href="/shop.html" class="btn btn-primary btn-sm">Start Shopping</a>
+                <div style="text-align:center;padding:48px 20px;color:var(--color-text-muted);">
+                    <div style="font-size:3.5rem;margin-bottom:12px;">📦</div>
+                    <h3 style="font-family:var(--font-heading);font-weight:700;font-size:17px;color:var(--color-text);margin-bottom:6px;">No orders found yet</h3>
+                    <p style="font-size:13px;margin-bottom:20px;max-width:360px;margin-left:auto;margin-right:auto;">
+                        Your past purchases and tracking history will appear here once you place an order.
+                    </p>
+                    <a href="/shop.html" class="btn btn-primary btn-sm">Explore Trending Drops ↗</a>
                 </div>
             `;
             return;
         }
 
         listContainer.innerHTML = orders.map(o => `
-            <div style="border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:20px;margin-bottom:16px;background:var(--color-surface-subtle);">
-                <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+            <div style="border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:22px;margin-bottom:18px;background:var(--color-surface-subtle);box-shadow:var(--shadow-xs);">
+                <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--color-border);padding-bottom:14px;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
                     <div>
-                        <div style="font-weight:800;font-size:15px;color:var(--color-text);">Order #${o.orderId || o.id}</div>
+                        <div style="font-family:var(--font-heading);font-weight:800;font-size:16px;color:var(--color-text);">Order #${o.orderId || o.id}</div>
                         <div style="font-size:12px;color:var(--color-text-muted);">${formatDate(o.createdAt)}</div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span class="badge badge-success">${o.orderStatus || 'Confirmed'}</span>
-                        <a href="/order-details.html?id=${o.orderId || o.id}" class="btn btn-outline btn-sm">View Details ↗</a>
+                        <a href="/order-details.html?id=${o.orderId || o.id}" class="btn btn-outline btn-sm">Track &amp; View Invoice ↗</a>
                     </div>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;flex-wrap:wrap;gap:8px;">
                     <div style="color:var(--color-text-secondary);">
-                        ${(o.items || []).length} item${(o.items || []).length === 1 ? '' : 's'} • ${o.paymentMethod || 'COD'}
+                        ${(o.items || []).length} item${(o.items || []).length === 1 ? '' : 's'} • Payment: <strong>${o.paymentMethod || 'Online'} (${o.paymentStatus || 'Paid'})</strong>
                     </div>
-                    <div style="font-weight:800;font-size:16px;color:var(--color-text);">
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:18px;color:var(--color-accent);">
                         ${formatPrice(o.total)}
                     </div>
                 </div>

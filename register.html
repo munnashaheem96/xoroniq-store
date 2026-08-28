@@ -3,80 +3,356 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account — XORONIQ</title>
+    <title>Create Customer Account — XORONIQ</title>
+    <meta name="description" content="Create your XORONIQ account to enjoy 1-click checkout, track your shipments live, and receive VIP member discounts.">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/responsive.css">
+    <link rel="icon" href="/assets/logo/xoroniq-logo.svg" type="image/svg+xml">
 </head>
-<body style="background:var(--color-surface-subtle);min-height:100vh;display:flex;flex-direction:column;">
+<body style="background:var(--color-bg-page);min-height:100vh;display:flex;flex-direction:column;">
 
-<header class="site-header">
+<!-- MINIMAL HEADER -->
+<header class="site-header" style="background:#FFFFFF;">
     <div class="container">
-        <div class="header-inner" style="justify-content:center;">
-            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+        <div class="header-inner" style="justify-content:space-between;">
+            <a href="/" class="header-logo" aria-label="XORONIQ">
+                <span>XORO<span class="header-logo-dot">N</span>IQ</span>
+            </a>
+            <div style="display:flex;align-items:center;gap:16px;">
+                <span style="font-size:13px;color:var(--color-text-secondary);font-weight:600;">Already registered?</span>
+                <a href="/login.html" class="btn btn-outline btn-sm" id="header-login-btn">Sign In</a>
+            </div>
         </div>
     </div>
 </header>
 
-<main style="display:flex;align-items:center;justify-content:center;padding:48px 20px;flex:1;">
-    <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:40px;width:100%;max-width:440px;box-shadow:var(--shadow-xl);">
-        <div style="text-align:center;margin-bottom:28px;">
-            <h1 style="font-family:var(--font-heading);font-size:1.75rem;font-weight:800;color:var(--color-text);margin-bottom:6px;">Create an Account</h1>
-            <p style="color:var(--color-text-secondary);font-size:14px;">Join XORONIQ for exclusive deals and order tracking</p>
+<!-- MAIN AUTH SECTION -->
+<main class="auth-page-wrap">
+    <div class="auth-container">
+        <!-- LEFT: BRAND & PERKS SIDE -->
+        <div class="auth-brand-side">
+            <div>
+                <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,255,255,0.12);border-radius:var(--radius-full);font-size:12px;font-weight:700;letter-spacing:0.04em;margin-bottom:28px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.18);">
+                    <span>✦</span> JOIN XORONIQ VIP
+                </div>
+                <h2 style="font-family:var(--font-heading);font-size:2rem;font-weight:800;line-height:1.2;margin-bottom:16px;">
+                    Unlock the Future of Smart Lifestyle.
+                </h2>
+                <p style="color:#CBD5E1;font-size:14px;line-height:1.6;margin-bottom:36px;">
+                    Create your free XORONIQ account in seconds to checkout faster, earn member perks, and track orders across India.
+                </p>
+
+                <div class="auth-perk-item">
+                    <div class="auth-perk-icon">🎁</div>
+                    <div>
+                        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">Instant ₹100 Off Coupon</div>
+                        <div style="font-size:12px;color:#94A3B8;">Apply code <strong>WELCOME10</strong> on your first order.</div>
+                    </div>
+                </div>
+
+                <div class="auth-perk-item">
+                    <div class="auth-perk-icon">📍</div>
+                    <div>
+                        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">Live Order Tracking</div>
+                        <div style="font-size:12px;color:#94A3B8;">Real-time GPS tracking from warehouse to doorstep.</div>
+                    </div>
+                </div>
+
+                <div class="auth-perk-item">
+                    <div class="auth-perk-icon">💎</div>
+                    <div>
+                        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">Priority Customer Support</div>
+                        <div style="font-size:12px;color:#94A3B8;">Dedicated assistance via WhatsApp and live email.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size:12px;color:#64748B;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);">
+                Your personal data is encrypted &amp; never shared with third parties.
+            </div>
         </div>
 
-        <form id="customer-register-form">
-            <div class="form-group">
-                <label class="form-label" for="reg-name">Full Name</label>
-                <input type="text" class="form-input" id="reg-name" required placeholder="e.g. Ananya Roy">
+        <!-- RIGHT: FORM SIDE -->
+        <div class="auth-form-side">
+            <div class="auth-header">
+                <h1 class="auth-title">Create an Account</h1>
+                <p class="auth-subtitle">Get started with your free customer profile</p>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="reg-email">Email Address</label>
-                <input type="email" class="form-input" id="reg-email" required placeholder="name@example.com">
+            <!-- ReturnTo Notice if coming from checkout -->
+            <div id="checkout-notice" style="display:none;" class="auth-alert auth-alert-info">
+                <span>🛒</span>
+                <span>Create an account to complete your order checkout seamlessly.</span>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="reg-password">Password (min 6 characters)</label>
-                <input type="password" class="form-input" id="reg-password" required minlength="6" placeholder="••••••••">
-            </div>
+            <!-- Inline Alert Message -->
+            <div id="auth-alert" style="display:none;" class="auth-alert"></div>
 
-            <button type="submit" class="btn btn-primary btn-lg btn-block" id="reg-submit-btn" style="margin-top:24px;">
-                Create Account ↗
+            <!-- 1-Click Google Sign Up -->
+            <button type="button" class="btn-social-google" id="btn-google-signup">
+                <svg viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Sign up with Google</span>
             </button>
-        </form>
 
-        <div style="text-align:center;margin-top:24px;font-size:14px;color:var(--color-text-secondary);">
-            Already have an account? <a href="/login.html" style="color:var(--color-accent);font-weight:700;">Sign In</a>
+            <div class="auth-divider">
+                <span>Or register with email</span>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="customer-register-form">
+                <div class="form-group">
+                    <label class="form-label" for="reg-name">Full Name *</label>
+                    <input type="text" class="form-input" id="reg-name" required placeholder="e.g. Rahul Sharma" autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg-email">Email Address *</label>
+                    <input type="email" class="form-input" id="reg-email" required placeholder="name@example.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg-password">Password (min 6 characters) *</label>
+                    <div class="password-input-wrap">
+                        <input type="password" class="form-input" id="reg-password" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+                        <button type="button" class="btn-toggle-password" id="toggle-reg-password" aria-label="Toggle password visibility">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Live Password Strength Meter -->
+                    <div class="password-strength-wrap" id="strength-container" style="display:none;">
+                        <div class="password-strength-bars">
+                            <div class="strength-bar" id="bar-1"></div>
+                            <div class="strength-bar" id="bar-2"></div>
+                            <div class="strength-bar" id="bar-3"></div>
+                        </div>
+                        <div class="strength-label" id="strength-text">Password strength</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg-confirm-password">Confirm Password *</label>
+                    <div class="password-input-wrap">
+                        <input type="password" class="form-input" id="reg-confirm-password" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+                        <button type="button" class="btn-toggle-password" id="toggle-confirm-password" aria-label="Toggle confirm password visibility">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin:18px 0 24px;">
+                    <label style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--color-text-secondary);cursor:pointer;line-height:1.5;">
+                        <input type="checkbox" id="agree-terms" required style="accent-color:var(--color-accent);margin-top:2px;width:15px;height:15px;">
+                        <span>I agree to the <a href="/policies/terms.html" target="_blank" style="color:var(--color-accent);font-weight:700;">Terms of Service</a> and <a href="/policies/privacy.html" target="_blank" style="color:var(--color-accent);font-weight:700;">Privacy Policy</a>.</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block" id="reg-submit-btn">
+                    Create Account ↗
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:24px;font-size:14px;color:var(--color-text-secondary);">
+                Already have an account? <a href="/login.html" id="link-login" style="color:var(--color-accent);font-weight:700;">Sign In</a>
+            </div>
         </div>
     </div>
 </main>
 
-<script type="module">
-    import { register } from '/js/auth.js';
-    import { showToast } from '/js/app.js';
+<!-- FOOTER -->
+<footer style="background:#FFFFFF;border-top:1px solid var(--color-border);padding:24px 0;margin-top:auto;text-align:center;font-size:12px;color:var(--color-text-muted);">
+    <div class="container">
+        © 2026 XORONIQ. All rights reserved. • <a href="/policies/privacy.html" style="color:var(--color-text-secondary);">Privacy Policy</a> • <a href="/policies/terms.html" style="color:var(--color-text-secondary);">Terms of Service</a>
+    </div>
+</footer>
 
+<script type="module">
+    import { register, loginWithGoogle } from '/js/auth.js';
+    import { showToast, getUrlParam } from '/js/app.js';
+
+    const returnTo = getUrlParam('returnTo') || '/account.html';
+    const decodedReturnTo = decodeURIComponent(returnTo);
+
+    // Update login link with returnTo
+    const loginLink = document.getElementById('link-login');
+    const headerLoginBtn = document.getElementById('header-login-btn');
+    if (loginLink && returnTo) loginLink.href = `/login.html?returnTo=${encodeURIComponent(returnTo)}`;
+    if (headerLoginBtn && returnTo) headerLoginBtn.href = `/login.html?returnTo=${encodeURIComponent(returnTo)}`;
+
+    // Show checkout notice if user was heading to checkout
+    if (decodedReturnTo.includes('checkout')) {
+        const notice = document.getElementById('checkout-notice');
+        if (notice) notice.style.display = 'flex';
+    }
+
+    // Show / Hide Password Toggles
+    function setupToggle(btnId, inputId) {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        if (!btn || !input) return;
+
+        btn.addEventListener('click', () => {
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.innerHTML = isPassword ? `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+            ` : `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            `;
+        });
+    }
+
+    setupToggle('toggle-reg-password', 'reg-password');
+    setupToggle('toggle-confirm-password', 'reg-confirm-password');
+
+    // Password Strength Meter
+    const passInput = document.getElementById('reg-password');
+    const strengthContainer = document.getElementById('strength-container');
+    const b1 = document.getElementById('bar-1');
+    const b2 = document.getElementById('bar-2');
+    const b3 = document.getElementById('bar-3');
+    const strengthText = document.getElementById('strength-text');
+
+    if (passInput) {
+        passInput.addEventListener('input', () => {
+            const val = passInput.value;
+            if (!val) {
+                if (strengthContainer) strengthContainer.style.display = 'none';
+                return;
+            }
+            if (strengthContainer) strengthContainer.style.display = 'block';
+
+            let score = 0;
+            if (val.length >= 6) score++;
+            if (val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+            if (val.length >= 10 && /[^A-Za-z0-9]/.test(val)) score++;
+
+            // Reset bars
+            [b1, b2, b3].forEach(b => {
+                if (b) b.className = 'strength-bar';
+            });
+
+            if (score === 1) {
+                if (b1) b1.classList.add('weak');
+                if (strengthText) {
+                    strengthText.textContent = 'Weak password (try combining letters & numbers)';
+                    strengthText.style.color = 'var(--color-error)';
+                }
+            } else if (score === 2) {
+                if (b1) b1.classList.add('medium');
+                if (b2) b2.classList.add('medium');
+                if (strengthText) {
+                    strengthText.textContent = 'Good password (add symbols for maximum security)';
+                    strengthText.style.color = 'var(--color-warning)';
+                }
+            } else if (score >= 3) {
+                if (b1) b1.classList.add('strong');
+                if (b2) b2.classList.add('strong');
+                if (b3) b3.classList.add('strong');
+                if (strengthText) {
+                    strengthText.textContent = 'Strong password ✓';
+                    strengthText.style.color = 'var(--color-success)';
+                }
+            }
+        });
+    }
+
+    // Helper: Show Alert
+    function showAlert(msg, type = 'error') {
+        const el = document.getElementById('auth-alert');
+        if (!el) return;
+        el.className = `auth-alert auth-alert-${type}`;
+        el.innerHTML = `<span>${type === 'error' ? '⚠️' : '✓'}</span> <span>${msg}</span>`;
+        el.style.display = 'flex';
+    }
+
+    function hideAlert() {
+        const el = document.getElementById('auth-alert');
+        if (el) el.style.display = 'none';
+    }
+
+    // Registration Form Submit
     const form = document.getElementById('customer-register-form');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        hideAlert();
+
         const name = document.getElementById('reg-name').value.trim();
         const email = document.getElementById('reg-email').value.trim();
         const password = document.getElementById('reg-password').value;
+        const confirmPassword = document.getElementById('reg-confirm-password').value;
         const btn = document.getElementById('reg-submit-btn');
 
-        btn.disabled = true;
-        btn.textContent = 'Creating account...';
+        if (password !== confirmPassword) {
+            showAlert("Passwords do not match. Please re-enter your password.", "error");
+            showToast("Passwords do not match", "error");
+            return;
+        }
 
-        try {
-            await register(email, password, name);
-            showToast("Account created successfully! Welcome to XORONIQ.", "success");
-            setTimeout(() => window.location.href = '/account.html', 800);
-        } catch (err) {
-            showToast(err.message || "Registration failed", "error");
+        if (password.length < 6) {
+            showAlert("Password must be at least 6 characters.", "error");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #FFF;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;"></span> Creating account...';
+
+        const result = await register(name, email, password);
+
+        if (result.success) {
+            showToast(`Welcome to XORONIQ, ${name}!`, "success");
+            setTimeout(() => {
+                window.location.href = decodedReturnTo;
+            }, 600);
+        } else {
+            showAlert(result.message || "Registration failed. Please try again.", "error");
+            showToast(result.message || "Registration failed", "error");
             btn.disabled = false;
             btn.textContent = 'Create Account ↗';
         }
     });
+
+    // Google Sign-Up Submit
+    const googleBtn = document.getElementById('btn-google-signup');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+            hideAlert();
+            googleBtn.disabled = true;
+            googleBtn.style.opacity = '0.7';
+
+            const result = await loginWithGoogle();
+
+            if (result.success) {
+                showToast("Account created with Google successfully!", "success");
+                setTimeout(() => {
+                    window.location.href = decodedReturnTo;
+                }, 600);
+            } else {
+                showAlert(result.message || "Google Sign-Up failed.", "error");
+                showToast(result.message || "Google Sign-Up failed", "error");
+                googleBtn.disabled = false;
+                googleBtn.style.opacity = '1';
+            }
+        });
+    }
 </script>
 </body>
 </html>

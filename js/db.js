@@ -421,6 +421,15 @@ export async function createOrder(orderData) {
     localOrders.unshift(fullOrder);
     setLocalStore(LS_KEYS.LOCAL_ORDERS, localOrders);
 
+    // Trigger Automated Order Notification Email
+    try {
+        fetch("/api/send-order-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order: fullOrder })
+        }).catch(e => console.warn("[db.js] send-order-email non-blocking error:", e));
+    } catch (e) {}
+
     return fullOrder;
 }
 
@@ -458,7 +467,13 @@ export async function getOrders({ customerId, orderStatus, pageSize = 50, sortFi
     let list = Array.from(map.values());
 
     if (customerId) {
-        list = list.filter(o => o.customerId === customerId || o.customer?.email === customerId);
+        const cLow = String(customerId).toLowerCase();
+        list = list.filter(o => 
+            o.customerId === customerId || 
+            o.customer?.uid === customerId || 
+            (o.customer?.email && o.customer.email.toLowerCase() === cLow) ||
+            (o.shippingAddress?.email && o.shippingAddress.email.toLowerCase() === cLow)
+        );
     }
     if (orderStatus && orderStatus !== "all") {
         list = list.filter(o => o.orderStatus === orderStatus);
@@ -750,17 +765,59 @@ export async function isAdmin(uid) {
 }
 
 export async function createUserProfile(uid, data) {
+    const profile = {
+        uid,
+        ...data,
+        role: data.role || "customer",
+        updatedAt: new Date().toISOString()
+    };
     try {
         await setDoc(doc(db, "users", uid), {
-            ...data,
+            ...profile,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
         }, { merge: true });
-    } catch (err) {}
+    } catch (err) {
+        console.warn("[db.js] Firestore createUserProfile error (cached locally):", err.message);
+    }
+    setLocalStore(`xoroniq_user_${uid}`, profile);
+    return profile;
 }
 
 export async function getUserProfile(uid) {
-    return { uid, name: "Customer", email: "customer@xoroniq.com" };
+    if (!uid) return null;
+    try {
+        const snap = await getDoc(doc(db, "users", uid));
+        if (snap && snap.exists()) {
+            const data = snap.data();
+            const profile = { id: snap.id, uid, ...data };
+            setLocalStore(`xoroniq_user_${uid}`, profile);
+            return profile;
+        }
+    } catch (err) {
+        console.warn("[db.js] Firestore getUserProfile error:", err.message);
+    }
+    return getLocalStore(`xoroniq_user_${uid}`, null);
+}
+
+export async function updateUserProfile(uid, data) {
+    if (!uid) return null;
+    const existing = await getUserProfile(uid) || { uid };
+    const updated = {
+        ...existing,
+        ...data,
+        updatedAt: new Date().toISOString()
+    };
+    try {
+        await setDoc(doc(db, "users", uid), {
+            ...updated,
+            updatedAt: serverTimestamp(),
+        }, { merge: true });
+    } catch (err) {
+        console.warn("[db.js] Firestore updateUserProfile error:", err.message);
+    }
+    setLocalStore(`xoroniq_user_${uid}`, updated);
+    return updated;
 }
 
 export async function seedDatabase() {

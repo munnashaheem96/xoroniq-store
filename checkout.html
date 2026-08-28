@@ -70,7 +70,26 @@
 
 <main>
     <div class="container" style="padding-top:36px;padding-bottom:72px;">
-        <h1 class="section-title" style="margin-bottom:28px;">Complete Your Order</h1>
+        <h1 class="section-title" style="margin-bottom:20px;">Complete Your Order</h1>
+
+        <!-- DYNAMIC CUSTOMER AUTH BANNER -->
+        <div id="checkout-auth-banner" class="checkout-auth-banner">
+            <div class="banner-info">
+                <div class="banner-icon" id="auth-banner-icon">🔒</div>
+                <div>
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:15px;margin-bottom:2px;" id="auth-banner-title">
+                        Customer Login Required to Place Order
+                    </div>
+                    <div style="font-size:13px;opacity:0.9;" id="auth-banner-desc">
+                        Sign in to save your order history, track live shipping, and enjoy instant checkout.
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;" id="auth-banner-actions">
+                <a href="/login.html?returnTo=/checkout.html" class="btn btn-outline-white btn-sm" id="checkout-login-btn">Sign In</a>
+                <a href="/register.html?returnTo=/checkout.html" class="btn btn-primary btn-sm" style="background:#FFFFFF;color:var(--color-primary);" id="checkout-reg-btn">Create Account</a>
+            </div>
+        </div>
 
         <form id="checkout-form" class="checkout-grid">
             <!-- LEFT: SHIPPING & PAYMENT DETAILS -->

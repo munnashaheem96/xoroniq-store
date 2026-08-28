@@ -117,6 +117,9 @@ export function renderProductCard(product) {
             <button class="product-wishlist-btn ${isWishlisted ? 'active' : ''}" data-id="${product.id}" title="Wishlist" aria-label="Toggle wishlist">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             </button>
+            <button class="product-share-btn" data-id="${product.id}" data-name="${encodeURIComponent(product.name)}" data-price="${product.sellingPrice}" data-slug="${product.slug || product.id}" data-image="${imgSrc}" title="Share Product" aria-label="Share product">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
         </div>
         <div class="product-card-info">
             <p class="product-card-category">${product.categoryName || "ESSENTIALS"}</p>
@@ -238,8 +241,22 @@ export function initApp() {
         });
     }
 
-    // Global Wishlist & Quick-Add click delegation
+    // Global Wishlist, Share & Quick-Add click delegation
     document.addEventListener("click", async (e) => {
+        const shareBtn = e.target.closest(".product-share-btn");
+        if (shareBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const id = shareBtn.dataset.id;
+            const name = shareBtn.dataset.name ? decodeURIComponent(shareBtn.dataset.name) : "Smart Product";
+            const price = shareBtn.dataset.price;
+            const slug = shareBtn.dataset.slug || id;
+            const image = shareBtn.dataset.image;
+
+            shareProduct({ id, name, price, slug, image });
+            return;
+        }
+
         const wishlistBtn = e.target.closest(".product-wishlist-btn");
         if (wishlistBtn) {
             e.preventDefault();
@@ -321,6 +338,129 @@ export function initApp() {
     } catch {
         // Firebase auth optional in local demo
     }
+}
+
+// ─────────────────────────────────────────────
+// GLOBAL SHARE PRODUCT ENGINE & MODAL
+// ─────────────────────────────────────────────
+
+export async function shareProduct(product) {
+    const slug = product.slug || product.id;
+    const url = `${window.location.origin}/products/${slug}`;
+    const name = product.name ? decodeURIComponent(product.name) : "Smart Product";
+    const formattedPrice = product.price ? formatPrice(product.price) : "";
+    const title = `${name} — XORONIQ`;
+    const text = `Check out ${name} on XORONIQ${formattedPrice ? ' for ' + formattedPrice : ''}! ⚡`;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: title,
+                text: text,
+                url: url
+            });
+            showToast("Product shared successfully!", "success");
+            return;
+        } catch (err) {
+            if (err.name === "AbortError") return;
+        }
+    }
+
+    openShareModal({
+        name,
+        title,
+        text,
+        url,
+        price: formattedPrice,
+        image: product.image || product.primaryImage || APP_CONFIG.placeholderImage
+    });
+}
+
+export function openShareModal({ name, text, url, price, image }) {
+    let modal = document.getElementById("global-share-modal");
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "global-share-modal";
+        modal.className = "modal-overlay";
+        document.body.appendChild(modal);
+    }
+
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`;
+    const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    const twUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+
+    modal.innerHTML = `
+        <div class="modal-card">
+            <button class="modal-close-btn" id="share-modal-close" aria-label="Close modal">✕</button>
+            <div style="text-align:center;margin-bottom:18px;">
+                <div style="font-size:2rem;margin-bottom:6px;">🔗</div>
+                <h3 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;margin-bottom:4px;">Share Product</h3>
+                <p style="color:var(--color-text-secondary);font-size:13px;">Share this exclusive find with your friends &amp; family</p>
+            </div>
+
+            <div class="share-modal-body">
+                <div class="share-product-preview">
+                    <img src="${image || APP_CONFIG.placeholderImage}" alt="${name}" class="share-product-img">
+                    <div class="share-product-info">
+                        <div class="share-product-title">${name}</div>
+                        ${price ? `<div class="share-product-price">${price}</div>` : ''}
+                    </div>
+                </div>
+
+                <div class="share-social-grid">
+                    <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="share-social-btn">
+                        <div class="share-social-icon whatsapp">💬</div>
+                        <span>WhatsApp</span>
+                    </a>
+                    <a href="${tgUrl}" target="_blank" rel="noopener noreferrer" class="share-social-btn">
+                        <div class="share-social-icon telegram">✈️</div>
+                        <span>Telegram</span>
+                    </a>
+                    <a href="${fbUrl}" target="_blank" rel="noopener noreferrer" class="share-social-btn">
+                        <div class="share-social-icon facebook">👍</div>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="${twUrl}" target="_blank" rel="noopener noreferrer" class="share-social-btn">
+                        <div class="share-social-icon twitter">✖</div>
+                        <span>X / Twitter</span>
+                    </a>
+                </div>
+
+                <div class="share-copy-wrap">
+                    <input type="text" class="share-copy-input" id="share-copy-link" value="${url}" readonly>
+                    <button type="button" class="btn btn-primary btn-sm" id="btn-copy-share-link">Copy Link</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    modal.classList.add("active");
+
+    const closeBtn = modal.querySelector("#share-modal-close");
+    closeBtn?.addEventListener("click", () => modal.classList.remove("active"));
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.remove("active");
+    });
+
+    const copyBtn = modal.querySelector("#btn-copy-share-link");
+    copyBtn?.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(url);
+            copyBtn.textContent = "Copied! ✓";
+            showToast("Product link copied to clipboard!", "success");
+            setTimeout(() => {
+                if (copyBtn) copyBtn.textContent = "Copy Link";
+            }, 2000);
+        } catch (e) {
+            const input = modal.querySelector("#share-copy-link");
+            if (input) {
+                input.select();
+                document.execCommand("copy");
+                showToast("Product link copied to clipboard!", "success");
+            }
+        }
+    });
 }
 
 // Auto-run when DOM is ready

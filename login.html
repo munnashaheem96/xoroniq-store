@@ -3,78 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Login — XORONIQ</title>
-    <meta name="description" content="Sign in to your XORONIQ customer account to track orders and manage wishlist.">
+    <title>Customer Sign In — XORONIQ</title>
+    <meta name="description" content="Sign in to your XORONIQ account to checkout safely, access exclusive drops, and track your orders in real time.">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/responsive.css">
+    <link rel="icon" href="/assets/logo/xoroniq-logo.svg" type="image/svg+xml">
 </head>
-<body style="background:var(--color-surface-subtle);min-height:100vh;display:flex;flex-direction:column;">
+<body style="background:var(--color-bg-page);min-height:100vh;display:flex;flex-direction:column;">
 
-<header class="site-header">
+<!-- MINIMAL HEADER -->
+<header class="site-header" style="background:#FFFFFF;">
     <div class="container">
-        <div class="header-inner" style="justify-content:center;">
-            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+        <div class="header-inner" style="justify-content:space-between;">
+            <a href="/" class="header-logo" aria-label="XORONIQ">
+                <span>XORO<span class="header-logo-dot">N</span>IQ</span>
+            </a>
+            <div style="display:flex;align-items:center;gap:16px;">
+                <span style="font-size:13px;color:var(--color-text-secondary);display:none;font-weight:600;" id="header-hint">Don't have an account?</span>
+                <a href="/register.html" class="btn btn-outline btn-sm" id="header-reg-btn">Create Account</a>
+            </div>
         </div>
     </div>
 </header>
 
-<main style="display:flex;align-items:center;justify-content:center;padding:48px 20px;flex:1;">
-    <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:40px;width:100%;max-width:440px;box-shadow:var(--shadow-xl);">
-        <div style="text-align:center;margin-bottom:28px;">
-            <h1 style="font-family:var(--font-heading);font-size:1.75rem;font-weight:800;color:var(--color-text);margin-bottom:6px;">Welcome Back</h1>
-            <p style="color:var(--color-text-secondary);font-size:14px;">Sign in to access your orders and profile</p>
+<!-- MAIN AUTH SECTION -->
+<main class="auth-page-wrap">
+    <div class="auth-container">
+        <!-- LEFT: BRAND & PERKS SIDE -->
+        <div class="auth-brand-side">
+            <div>
+                <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,255,255,0.12);border-radius:var(--radius-full);font-size:12px;font-weight:700;letter-spacing:0.04em;margin-bottom:28px;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.18);">
+                    <span>🔒</span> 256-BIT ENCRYPTED PORTAL
+                </div>
+                <h2 style="font-family:var(--font-heading);font-size:2rem;font-weight:800;line-height:1.2;margin-bottom:16px;">
+                    Smart Finds.<br>Elevated Living.
+                </h2>
+                <p style="color:#CBD5E1;font-size:14px;line-height:1.6;margin-bottom:36px;">
+                    Sign in to effortlessly checkout, track your live courier deliveries, and access member-only drops.
+                </p>
+
+                <div class="auth-perk-item">
+                    <div class="auth-perk-icon">⚡</div>
+                    <div>
+                        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">1-Click Express Checkout</div>
+                        <div style="font-size:12px;color:#94A3B8;">Saved addresses and instant payment processing.</div>
+                    </div>
+                </div>
+
+                <div class="auth-perk-item">
+                    <div class="auth-perk-icon">📦</div>
+                    <div>
+                        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">Real-Time Order Tracking</div>
+                        <div style="font-size:12px;color:#94A3B8;">Live transit updates and instant digital invoices.</div>
+                    </div>
+                </div>
+
+                <div class="auth-perk-item">
+                    <div class="auth-perk-icon">🛡️</div>
+                    <div>
+                        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">7-Day Easy Replacements</div>
+                        <div style="font-size:12px;color:#94A3B8;">Zero hassle refunds & buyer protection on all orders.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size:12px;color:#64748B;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);">
+                Protected by Google Firebase &amp; Razorpay Standard Security.
+            </div>
         </div>
 
-        <form id="customer-login-form">
-            <div class="form-group">
-                <label class="form-label" for="login-email">Email Address</label>
-                <input type="email" class="form-input" id="login-email" required placeholder="name@example.com">
+        <!-- RIGHT: FORM SIDE -->
+        <div class="auth-form-side">
+            <div class="auth-header">
+                <h1 class="auth-title">Welcome Back</h1>
+                <p class="auth-subtitle">Sign in to your account to continue</p>
             </div>
 
-            <div class="form-group">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <label class="form-label" for="login-password" style="margin-bottom:0;">Password</label>
-                </div>
-                <input type="password" class="form-input" id="login-password" required placeholder="••••••••">
+            <!-- ReturnTo Notice if coming from checkout -->
+            <div id="checkout-notice" style="display:none;" class="auth-alert auth-alert-info">
+                <span>🛒</span>
+                <span>Please sign in or create an account to complete your order checkout.</span>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-submit-btn" style="margin-top:24px;">
-                Sign In ↗
+            <!-- Inline Alert Message -->
+            <div id="auth-alert" style="display:none;" class="auth-alert"></div>
+
+            <!-- 1-Click Google Sign In -->
+            <button type="button" class="btn-social-google" id="btn-google-login">
+                <svg viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Continue with Google</span>
             </button>
-        </form>
 
-        <div style="text-align:center;margin-top:24px;font-size:14px;color:var(--color-text-secondary);">
-            Don't have an account? <a href="/register.html" style="color:var(--color-accent);font-weight:700;">Create One</a>
+            <div class="auth-divider">
+                <span>Or sign in with email</span>
+            </div>
+
+            <!-- Email & Password Form -->
+            <form id="customer-login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-email">Email Address</label>
+                    <input type="email" class="form-input" id="login-email" required placeholder="name@example.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <label class="form-label" for="login-password" style="margin-bottom:0;">Password</label>
+                        <button type="button" id="btn-forgot-password" style="background:none;border:none;color:var(--color-accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;">
+                            Forgot Password?
+                        </button>
+                    </div>
+                    <div class="password-input-wrap">
+                        <input type="password" class="form-input" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+                        <button type="button" class="btn-toggle-password" id="toggle-password-btn" aria-label="Toggle password visibility" title="Show/Hide Password">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;margin-bottom:24px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;user-select:none;">
+                        <input type="checkbox" id="remember-me" checked style="accent-color:var(--color-accent);width:16px;height:16px;">
+                        <span>Keep me signed in</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-submit-btn">
+                    Sign In ↗
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:24px;font-size:14px;color:var(--color-text-secondary);">
+                Don't have an account? <a href="/register.html" id="link-create-account" style="color:var(--color-accent);font-weight:700;">Create Account</a>
+            </div>
         </div>
     </div>
 </main>
 
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgot-modal">
+    <div class="modal-card">
+        <button class="modal-close-btn" id="forgot-modal-close" aria-label="Close">✕</button>
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:2.5rem;margin-bottom:8px;">🔑</div>
+            <h3 style="font-family:var(--font-heading);font-size:1.35rem;font-weight:800;margin-bottom:6px;">Reset Your Password</h3>
+            <p style="color:var(--color-text-secondary);font-size:13px;">Enter your registered email to receive a secure password reset link.</p>
+        </div>
+
+        <div id="forgot-alert" style="display:none;" class="auth-alert"></div>
+
+        <form id="forgot-password-form">
+            <div class="form-group">
+                <label class="form-label" for="forgot-email">Account Email</label>
+                <input type="email" class="form-input" id="forgot-email" required placeholder="name@example.com">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="forgot-submit-btn" style="margin-top:16px;">
+                Send Password Reset Email ↗
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer style="background:#FFFFFF;border-top:1px solid var(--color-border);padding:24px 0;margin-top:auto;text-align:center;font-size:12px;color:var(--color-text-muted);">
+    <div class="container">
+        © 2026 XORONIQ. All rights reserved. • <a href="/policies/privacy.html" style="color:var(--color-text-secondary);">Privacy Policy</a> • <a href="/policies/terms.html" style="color:var(--color-text-secondary);">Terms of Service</a>
+    </div>
+</footer>
+
 <script type="module">
-    import { login } from '/js/auth.js';
+    import { login, loginWithGoogle, resetPassword, isLoggedIn } from '/js/auth.js';
     import { showToast, getUrlParam } from '/js/app.js';
 
+    const returnTo = getUrlParam('returnTo') || '/account.html';
+    const decodedReturnTo = decodeURIComponent(returnTo);
+
+    // Update registration links with returnTo
+    const regLink = document.getElementById('link-create-account');
+    const headerRegBtn = document.getElementById('header-reg-btn');
+    if (regLink && returnTo) regLink.href = `/register.html?returnTo=${encodeURIComponent(returnTo)}`;
+    if (headerRegBtn && returnTo) headerRegBtn.href = `/register.html?returnTo=${encodeURIComponent(returnTo)}`;
+
+    // Show checkout notice if user was heading to checkout
+    if (decodedReturnTo.includes('checkout')) {
+        const notice = document.getElementById('checkout-notice');
+        if (notice) notice.style.display = 'flex';
+    }
+
+    // Auto-fill saved email if exists
+    try {
+        const savedEmail = localStorage.getItem('xoroniq_saved_email');
+        if (savedEmail) {
+            document.getElementById('login-email').value = savedEmail;
+        }
+    } catch(e) {}
+
+    // Show / Hide Password Toggle
+    const toggleBtn = document.getElementById('toggle-password-btn');
+    const passInput = document.getElementById('login-password');
+    if (toggleBtn && passInput) {
+        toggleBtn.addEventListener('click', () => {
+            const isPassword = passInput.type === 'password';
+            passInput.type = isPassword ? 'text' : 'password';
+            toggleBtn.innerHTML = isPassword ? `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+            ` : `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            `;
+        });
+    }
+
+    // Helper: Show Alert
+    function showAlert(msg, type = 'error') {
+        const el = document.getElementById('auth-alert');
+        if (!el) return;
+        el.className = `auth-alert auth-alert-${type}`;
+        el.innerHTML = `<span>${type === 'error' ? '⚠️' : '✓'}</span> <span>${msg}</span>`;
+        el.style.display = 'flex';
+    }
+
+    function hideAlert() {
+        const el = document.getElementById('auth-alert');
+        if (el) el.style.display = 'none';
+    }
+
+    // Email / Password Form Submit
     const form = document.getElementById('customer-login-form');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        hideAlert();
+
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
+        const rememberMe = document.getElementById('remember-me')?.checked;
         const btn = document.getElementById('login-submit-btn');
 
-        btn.disabled = true;
-        btn.textContent = 'Signing in...';
+        if (rememberMe) {
+            try { localStorage.setItem('xoroniq_saved_email', email); } catch(e){}
+        } else {
+            try { localStorage.removeItem('xoroniq_saved_email'); } catch(e){}
+        }
 
-        try {
-            await login(email, password);
-            showToast("Welcome back!", "success");
-            const returnTo = getUrlParam('returnTo') || '/account.html';
-            setTimeout(() => window.location.href = returnTo, 600);
-        } catch (err) {
-            showToast(err.message || "Failed to sign in", "error");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #FFF;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:8px;"></span> Signing in...';
+
+        const result = await login(email, password);
+
+        if (result.success) {
+            showToast("Welcome back! Signing you in...", "success");
+            setTimeout(() => {
+                window.location.href = decodedReturnTo;
+            }, 500);
+        } else {
+            showAlert(result.message || "Failed to sign in. Please verify your credentials.", "error");
+            showToast(result.message || "Sign in failed", "error");
             btn.disabled = false;
             btn.textContent = 'Sign In ↗';
         }
     });
+
+    // Google Sign-In Submit
+    const googleBtn = document.getElementById('btn-google-login');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+            hideAlert();
+            googleBtn.disabled = true;
+            googleBtn.style.opacity = '0.7';
+
+            const result = await loginWithGoogle();
+
+            if (result.success) {
+                showToast("Signed in with Google successfully!", "success");
+                setTimeout(() => {
+                    window.location.href = decodedReturnTo;
+                }, 500);
+            } else {
+                showAlert(result.message || "Google Sign-In failed.", "error");
+                showToast(result.message || "Google Sign-In failed", "error");
+                googleBtn.disabled = false;
+                googleBtn.style.opacity = '1';
+            }
+        });
+    }
+
+    // Forgot Password Modal Handlers
+    const forgotModal = document.getElementById('forgot-modal');
+    const forgotBtn = document.getElementById('btn-forgot-password');
+    const forgotClose = document.getElementById('forgot-modal-close');
+    const forgotForm = document.getElementById('forgot-password-form');
+    const forgotAlert = document.getElementById('forgot-alert');
+
+    if (forgotBtn && forgotModal) {
+        forgotBtn.addEventListener('click', () => {
+            const curEmail = document.getElementById('login-email')?.value.trim();
+            if (curEmail) document.getElementById('forgot-email').value = curEmail;
+            forgotModal.classList.add('active');
+        });
+    }
+
+    if (forgotClose && forgotModal) {
+        forgotClose.addEventListener('click', () => forgotModal.classList.remove('active'));
+        forgotModal.addEventListener('click', (e) => {
+            if (e.target === forgotModal) forgotModal.classList.remove('active');
+        });
+    }
+
+    if (forgotForm) {
+        forgotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value.trim();
+            const submitBtn = document.getElementById('forgot-submit-btn');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending reset link...';
+
+            const res = await resetPassword(email);
+            if (res.success) {
+                forgotAlert.className = 'auth-alert auth-alert-success';
+                forgotAlert.innerHTML = `<span>✓</span> <span>Check your inbox! We've sent a password reset link to <strong>${email}</strong>.</span>`;
+                forgotAlert.style.display = 'flex';
+                showToast("Password reset email sent!", "success");
+                setTimeout(() => {
+                    forgotModal.classList.remove('active');
+                    forgotAlert.style.display = 'none';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send Password Reset Email ↗';
+                }, 3000);
+            } else {
+                forgotAlert.className = 'auth-alert auth-alert-error';
+                forgotAlert.innerHTML = `<span>⚠️</span> <span>${res.message}</span>`;
+                forgotAlert.style.display = 'flex';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Password Reset Email ↗';
+            }
+        });
+    }
 </script>
 </body>
 </html>
