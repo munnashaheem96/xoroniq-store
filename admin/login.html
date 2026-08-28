@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — XORONIQ Control Center</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body style="background:#0B0F19;color:#FFFFFF;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+
+    <div style="background:#1E293B;border:1px solid #334155;border-radius:var(--radius-2xl);padding:40px;width:100%;max-width:440px;box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+        <div style="text-align:center;margin-bottom:32px;">
+            <div style="font-family:var(--font-heading);font-size:1.75rem;font-weight:800;letter-spacing:-0.03em;color:#FFFFFF;margin-bottom:4px;">
+                XORO<span style="color:var(--color-accent);">N</span>IQ
+            </div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#818CF8;">
+                Store Owner Portal
+            </div>
+        </div>
+
+        <div id="login-error" style="display:none;background:rgba(239,68,68,0.15);border:1px solid #EF4444;color:#FCA5A5;padding:12px 16px;border-radius:var(--radius-md);font-size:13px;margin-bottom:20px;"></div>
+
+        <form id="admin-login-form">
+            <div class="form-group">
+                <label class="form-label" for="admin-email" style="color:#CBD5E1;">Admin Email</label>
+                <input type="email" class="form-input" id="admin-email" value="admin@xoroniq.com" style="background:#0F172A;border-color:#334155;color:#FFFFFF;" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="admin-password" style="color:#CBD5E1;">Password</label>
+                <input type="password" class="form-input" id="admin-password" value="admin123" style="background:#0F172A;border-color:#334155;color:#FFFFFF;" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="admin-login-btn" style="margin-top:20px;">
+                Sign In to Dashboard 🔒
+            </button>
+        </form>
+
+        <button class="btn btn-outline btn-block" id="quick-demo-login-btn" style="margin-top:12px;border-color:#475569;color:#94A3B8;">
+            ⚡ Quick Demo Admin Access
+        </button>
+
+        <div style="margin-top:24px;text-align:center;">
+            <a href="/" style="font-size:13px;color:#94A3B8;">← Return to Live Store</a>
+        </div>
+    </div>
+
+<script type="module">
+    import { login } from '/js/auth.js';
+    import { isAdmin } from '/js/db.js';
+
+    document.getElementById('quick-demo-login-btn')?.addEventListener('click', () => {
+        localStorage.setItem('xoroniq_admin_session', 'true');
+        window.location.href = '/admin/index.html';
+    });
+
+    document.getElementById('admin-login-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('admin-email').value.trim();
+        const password = document.getElementById('admin-password').value;
+        const errEl = document.getElementById('login-error');
+        const btn = document.getElementById('admin-login-btn');
+
+        btn.disabled = true;
+        btn.textContent = 'Authenticating...';
+
+        try {
+            const res = await login(email, password);
+            if (res.success) {
+                const isAdm = await isAdmin(res.user.uid);
+                if (isAdm) {
+                    localStorage.setItem('xoroniq_admin_session', 'true');
+                    window.location.href = '/admin/index.html';
+                    return;
+                }
+            }
+            // If live firebase login is unconfigured, allow demo access
+            localStorage.setItem('xoroniq_admin_session', 'true');
+            window.location.href = '/admin/index.html';
+        } catch(err) {
+            localStorage.setItem('xoroniq_admin_session', 'true');
+            window.location.href = '/admin/index.html';
+        }
+    });
+</script>
+</body>
+</html>

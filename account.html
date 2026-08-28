@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal — XORONIQ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <style>
+        .account-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 36px;
+            align-items: start;
+        }
+        @media (max-width: 992px) {
+            .account-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .account-sidebar {
+            background: #FFFFFF;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-2xl);
+            padding: 24px;
+        }
+        .account-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            margin-bottom: 4px;
+        }
+        .account-nav-link:hover, .account-nav-link.active {
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<header class="site-header" id="site-header">
+    <div class="container">
+        <div class="header-inner">
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"><span></span><span></span><span></span></span>
+            </button>
+
+            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+
+            <nav class="header-nav" id="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop.html" class="nav-link">Shop All</a>
+                <a href="/order-tracking.html" class="nav-link">Track Order</a>
+                <a href="/about.html" class="nav-link">About</a>
+                <a href="/contact.html" class="nav-link">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="/wishlist.html" class="header-action-btn" aria-label="Wishlist">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <span class="header-badge wishlist-count" style="display:none">0</span>
+                </a>
+                <a href="/cart.html" class="header-action-btn" aria-label="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+                    <span class="header-badge cart-count" style="display:none">0</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+<div id="nav-overlay"></div>
+
+<main>
+    <div class="container" style="padding-top:36px;padding-bottom:72px;">
+        <h1 class="section-title" style="margin-bottom:28px;">Customer Portal</h1>
+
+        <div class="account-layout">
+            <!-- SIDEBAR -->
+            <aside class="account-sidebar">
+                <div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--color-border);margin-bottom:16px;">
+                    <div style="width:48px;height:48px;border-radius:var(--radius-full);background:var(--gradient-primary);color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;" id="user-initial">
+                        C
+                    </div>
+                    <div>
+                        <div style="font-weight:700;font-size:15px;" id="user-name">Valued Customer</div>
+                        <div style="font-size:12px;color:var(--color-text-secondary);" id="user-email">Active Account</div>
+                    </div>
+                </div>
+
+                <nav>
+                    <a href="#orders" class="account-nav-link active" id="nav-tab-orders">📦 Order History</a>
+                    <a href="/wishlist.html" class="account-nav-link">❤️ Saved Wishlist</a>
+                    <a href="/order-tracking.html" class="account-nav-link">📍 Live Tracking</a>
+                    <a href="#profile" class="account-nav-link" id="nav-tab-profile">⚙️ Profile Settings</a>
+                    <button class="account-nav-link" id="auth-action-btn" style="width:100%;border:none;background:transparent;cursor:pointer;color:var(--color-error);margin-top:12px;padding:12px 16px;">
+                        🚪 Sign Out
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <div>
+                <!-- ORDERS TAB -->
+                <div id="content-orders" style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:32px;">
+                    <h2 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;margin-bottom:20px;">Recent Orders</h2>
+                    <div id="account-orders-list">
+                        <!-- Populated by script -->
+                    </div>
+                </div>
+
+                <!-- PROFILE TAB -->
+                <div id="content-profile" style="display:none;background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:32px;">
+                    <h2 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;margin-bottom:20px;">Profile Settings</h2>
+                    <form id="profile-form" style="max-width:480px;">
+                        <div class="form-group">
+                            <label class="form-label" for="prof-name">Full Name</label>
+                            <input type="text" class="form-input" id="prof-name" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="prof-phone">Phone Number</label>
+                            <input type="tel" class="form-input" id="prof-phone" placeholder="Enter 10-digit phone number">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-bottom" style="border-top:none;padding-top:0;">
+            <div>© 2026 XORONIQ. All rights reserved.</div>
+            <a href="/shop.html" style="color:#94A3B8;">Shop Catalog</a>
+        </div>
+    </div>
+</footer>
+
+<script type="module">
+    import { getOrders } from '/js/db.js';
+    import { formatPrice, formatDate, showToast } from '/js/app.js';
+    import { auth } from '/js/firebase.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+    import { logout } from '/js/auth.js';
+
+    async function init() {
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('user-name').textContent = user.displayName || user.email.split('@')[0];
+                document.getElementById('user-email').textContent = user.email;
+                document.getElementById('user-initial').textContent = (user.displayName || user.email)[0].toUpperCase();
+            }
+        });
+
+        // Tab switching
+        const tabOrders = document.getElementById('nav-tab-orders');
+        const tabProfile = document.getElementById('nav-tab-profile');
+        const contentOrders = document.getElementById('content-orders');
+        const contentProfile = document.getElementById('content-profile');
+
+        tabOrders?.addEventListener('click', (e) => {
+            e.preventDefault();
+            tabOrders.classList.add('active');
+            tabProfile.classList.remove('active');
+            contentOrders.style.display = 'block';
+            contentProfile.style.display = 'none';
+        });
+
+        tabProfile?.addEventListener('click', (e) => {
+            e.preventDefault();
+            tabProfile.classList.add('active');
+            tabOrders.classList.remove('active');
+            contentOrders.style.display = 'none';
+            contentProfile.style.display = 'block';
+        });
+
+        // Logout
+        document.getElementById('auth-action-btn')?.addEventListener('click', async () => {
+            await logout();
+            showToast("Signed out successfully", "info");
+            setTimeout(() => window.location.href = '/', 500);
+        });
+
+        // Load Orders
+        const listContainer = document.getElementById('account-orders-list');
+        const { orders } = await getOrders({ pageSize: 20 });
+
+        if (!orders || orders.length === 0) {
+            listContainer.innerHTML = `
+                <div style="text-align:center;padding:40px 20px;color:var(--color-text-muted);">
+                    <div style="font-size:3rem;margin-bottom:8px;">📦</div>
+                    <div style="font-weight:700;font-size:16px;color:var(--color-text);margin-bottom:4px;">No orders found</div>
+                    <p style="font-size:13px;margin-bottom:16px;">You haven't placed any orders yet.</p>
+                    <a href="/shop.html" class="btn btn-primary btn-sm">Start Shopping</a>
+                </div>
+            `;
+            return;
+        }
+
+        listContainer.innerHTML = orders.map(o => `
+            <div style="border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:20px;margin-bottom:16px;background:var(--color-surface-subtle);">
+                <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <div style="font-weight:800;font-size:15px;color:var(--color-text);">Order #${o.orderId || o.id}</div>
+                        <div style="font-size:12px;color:var(--color-text-muted);">${formatDate(o.createdAt)}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span class="badge badge-success">${o.orderStatus || 'Confirmed'}</span>
+                        <a href="/order-details.html?id=${o.orderId || o.id}" class="btn btn-outline btn-sm">View Details ↗</a>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;">
+                    <div style="color:var(--color-text-secondary);">
+                        ${(o.items || []).length} item${(o.items || []).length === 1 ? '' : 's'} • ${o.paymentMethod || 'COD'}
+                    </div>
+                    <div style="font-weight:800;font-size:16px;color:var(--color-text);">
+                        ${formatPrice(o.total)}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    init();
+</script>
+</body>
+</html>

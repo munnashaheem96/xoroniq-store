@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — XORONIQ Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div id="admin-sidebar-mount"></div>
+
+<div class="admin-main">
+    <header class="admin-header">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle sidebar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <span class="admin-header-title">Executive Dashboard</span>
+        </div>
+        <div class="admin-header-actions">
+            <a href="/" class="btn btn-ghost btn-sm" target="_blank" style="color:#94A3B8;">Live Store ↗</a>
+            <div class="admin-header-avatar">A</div>
+        </div>
+    </header>
+
+    <div class="admin-content">
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Gross Revenue</div>
+                <div class="kpi-value" id="kpi-revenue">₹24,890</div>
+                <div class="kpi-change">↑ 18.4% vs last week</div>
+            </div>
+            <div class="kpi-card accent">
+                <div class="kpi-label">Total Orders</div>
+                <div class="kpi-value" id="kpi-orders">18</div>
+                <div class="kpi-change">↑ 12 new today</div>
+            </div>
+            <div class="kpi-card success">
+                <div class="kpi-label">Active Catalog</div>
+                <div class="kpi-value" id="kpi-products">8</div>
+                <div class="kpi-change">100% In Stock</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="kpi-label">Total Shoppers</div>
+                <div class="kpi-value" id="kpi-customers">42</div>
+                <div class="kpi-change">3.8% Store CVR</div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 380px;gap:24px;margin-bottom:32px;">
+            <!-- Revenue Chart -->
+            <div class="admin-table-card">
+                <div class="admin-table-header">
+                    <h2 class="admin-table-title">7-Day Revenue Trend (₹)</h2>
+                    <span class="badge badge-primary">Daily Telemetry</span>
+                </div>
+                <div style="padding:24px;" id="revenue-chart-wrap">
+                    <div class="chart-container" id="revenue-chart"></div>
+                </div>
+            </div>
+
+            <!-- Recent Orders List -->
+            <div class="admin-table-card">
+                <div class="admin-table-header">
+                    <h2 class="admin-table-title">Recent Orders</h2>
+                    <a href="/admin/orders.html" class="btn btn-ghost btn-sm" style="color:var(--color-accent);">View All</a>
+                </div>
+                <div id="recent-orders-list" style="padding:8px 0;"></div>
+            </div>
+        </div>
+
+        <!-- Recent Products Inventory Table -->
+        <div class="admin-table-card">
+            <div class="admin-table-header">
+                <h2 class="admin-table-title">Product Catalog Quick View</h2>
+                <div style="display:flex;gap:10px;">
+                    <a href="/admin/products.html" class="btn btn-ghost btn-sm">Full Inventory</a>
+                    <a href="/admin/product-form.html" class="btn btn-primary btn-sm">+ Add New Item</a>
+                </div>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Product Info</th>
+                            <th>Collection</th>
+                            <th>Selling Price</th>
+                            <th>Inventory</th>
+                            <th>Visibility</th>
+                            <th>Quick Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-products-tbody">
+                        <tr><td colspan="6" class="table-empty">Loading products...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script type="module">
+    import { initAdmin, getAdminSidebarHTML, formatPrice, formatDate } from '/js/admin.js';
+    import { getOrders, getProducts, getDashboardStats } from '/js/db.js';
+
+    async function init() {
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML('dashboard');
+        await initAdmin();
+
+        await Promise.allSettled([loadStats(), loadRecentOrders(), loadRecentProducts()]);
+    }
+
+    async function loadStats() {
+        try {
+            const stats = await getDashboardStats();
+            document.getElementById('kpi-revenue').textContent = formatPrice(stats.totalRevenue);
+            document.getElementById('kpi-orders').textContent = stats.totalOrders;
+            document.getElementById('kpi-products').textContent = stats.totalProducts;
+            document.getElementById('kpi-customers').textContent = stats.totalCustomers;
+            renderChart(stats.dailyRevenue || []);
+        } catch(e) {
+            console.warn("loadStats error:", e);
+        }
+    }
+
+    function renderChart(dailyData) {
+        const wrap = document.getElementById('revenue-chart');
+        if (!dailyData || !dailyData.length) {
+            wrap.innerHTML = '<div style="text-align:center;padding:40px;color:#94A3B8;">No telemetry data available</div>';
+            return;
+        }
+        const max = Math.max(...dailyData.map(d => d.value), 1);
+        wrap.innerHTML = `<div class="chart-bar-group">
+            ${dailyData.map(d => `
+            <div class="chart-bar-wrap" title="${d.label}: ${formatPrice(d.value)}">
+                <div class="chart-bar" style="height:${Math.max(8, (d.value/max)*100)}%;"></div>
+                <div class="chart-bar-label">${d.label}</div>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    async function loadRecentOrders() {
+        const container = document.getElementById('recent-orders-list');
+        try {
+            const { orders } = await getOrders({ pageSize: 5 });
+            if (!orders || !orders.length) {
+                container.innerHTML = '<div class="table-empty"><p>No orders yet</p></div>';
+                return;
+            }
+            container.innerHTML = orders.slice(0, 5).map(o => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #334155;">
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#F8FAFC;">Order #${o.orderId || o.id}</div>
+                    <div style="font-size:12px;color:#94A3B8;">${o.customer?.name || 'Customer'}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:14px;font-weight:800;color:#F8FAFC;">${formatPrice(o.total)}</div>
+                    <span class="badge badge-success" style="font-size:10px;">${o.orderStatus || 'Confirmed'}</span>
+                </div>
+            </div>`).join('');
+        } catch(e) {
+            container.innerHTML = '<div class="table-empty"><p>Unable to load orders</p></div>';
+        }
+    }
+
+    async function loadRecentProducts() {
+        const tbody = document.getElementById('recent-products-tbody');
+        try {
+            const { products } = await getProducts({ pageSize: 6, activeOnly: false });
+            if (!products || !products.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No products found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = products.slice(0, 6).map(p => `
+            <tr>
+                <td><div style="display:flex;align-items:center;gap:12px;">
+                    <img class="table-product-img" src="${p.primaryImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" alt="${p.name}">
+                    <div><div style="font-weight:700;color:#F8FAFC;">${p.name}</div><div style="font-size:12px;color:#94A3B8;">${p.sku || '—'}</div></div>
+                </div></td>
+                <td>${p.categoryName || '—'}</td>
+                <td><strong style="color:#F8FAFC;">${formatPrice(p.sellingPrice)}</strong></td>
+                <td><span style="font-weight:700;color:${(p.stock || 0) > 5 ? '#10B981' : '#F59E0B'}">${p.stock ?? 20}</span></td>
+                <td><span class="badge ${p.isActive !== false ? 'badge-success' : 'badge-error'}">${p.isActive !== false ? 'Active' : 'Draft'}</span></td>
+                <td>
+                    <div style="display:flex;gap:8px;">
+                        <a href="/admin/product-form.html?id=${p.id}" class="btn btn-dark btn-sm" style="padding:4px 10px;font-size:12px;">Edit</a>
+                        <a href="/product.html?id=${p.id}" target="_blank" class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:12px;">↗</a>
+                    </div>
+                </td>
+            </tr>`).join('');
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Unable to load catalog.</td></tr>';
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

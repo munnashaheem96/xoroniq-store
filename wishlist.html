@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist — XORONIQ</title>
+    <meta name="description" content="Save and manage your favorite smart electronics and lifestyle essentials at XORONIQ.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<header class="site-header" id="site-header">
+    <div class="container">
+        <div class="header-inner">
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"><span></span><span></span><span></span></span>
+            </button>
+
+            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+
+            <nav class="header-nav" id="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop.html" class="nav-link">Shop All</a>
+                <a href="/about.html" class="nav-link">About</a>
+                <a href="/contact.html" class="nav-link">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="/wishlist.html" class="header-action-btn" aria-label="Wishlist">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <span class="header-badge wishlist-count" style="display:none">0</span>
+                </a>
+                <a href="/cart.html" class="header-action-btn" aria-label="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+                    <span class="header-badge cart-count" style="display:none">0</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+<div id="nav-overlay"></div>
+
+<main>
+    <div class="container" style="padding-top:36px;padding-bottom:72px;">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px;">
+            <div>
+                <h1 class="section-title" style="margin-bottom:4px;">My Saved Items</h1>
+                <p id="wishlist-subtitle" style="color:var(--color-text-secondary);font-size:14px;">0 saved products</p>
+            </div>
+            <button class="btn btn-outline btn-sm" id="clear-wishlist-btn" style="display:none;">Clear Wishlist</button>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="wishlist-empty" style="display:none;text-align:center;padding:80px 20px;background:#FFFFFF;border-radius:var(--radius-2xl);border:1px dashed var(--color-border);">
+            <div style="font-size:4rem;margin-bottom:16px;">❤️</div>
+            <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:8px;">Your Wishlist is Empty</h2>
+            <p style="color:var(--color-text-secondary);margin-bottom:24px;max-width:420px;margin-left:auto;margin-right:auto;">
+                Explore our catalog and tap the heart icon on items you'd love to save for later!
+            </p>
+            <a href="/shop.html" class="btn btn-primary btn-lg">Explore Catalog</a>
+        </div>
+
+        <!-- WISHLIST GRID -->
+        <div class="products-grid" id="wishlist-grid"></div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-bottom" style="border-top:none;padding-top:0;">
+            <div>© 2026 XORONIQ. All rights reserved.</div>
+            <a href="/shop.html" style="color:#94A3B8;">Continue Shopping</a>
+        </div>
+    </div>
+</footer>
+
+<script type="module">
+    import { getLocalWishlist, getProductsByIds } from '/js/db.js';
+    import { renderProductCard, showSkeletons, updateHeaderBadges } from '/js/app.js';
+
+    async function init() {
+        updateHeaderBadges();
+        const grid = document.getElementById('wishlist-grid');
+        const empty = document.getElementById('wishlist-empty');
+        const subtitle = document.getElementById('wishlist-subtitle');
+        const clearBtn = document.getElementById('clear-wishlist-btn');
+
+        const ids = getLocalWishlist();
+        if (!ids.length) {
+            empty.style.display = 'block';
+            grid.style.display = 'none';
+            subtitle.textContent = '0 items saved';
+            return;
+        }
+
+        empty.style.display = 'none';
+        grid.style.display = 'grid';
+        if (clearBtn) clearBtn.style.display = 'inline-flex';
+        subtitle.textContent = `${ids.length} item${ids.length === 1 ? '' : 's'} saved`;
+
+        showSkeletons(grid, ids.length);
+        const products = await getProductsByIds(ids);
+        grid.innerHTML = products.map(renderProductCard).join('');
+
+        clearBtn?.addEventListener('click', () => {
+            localStorage.setItem('xoroniq_wishlist', JSON.stringify([]));
+            init();
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout — XORONIQ</title>
+    <meta name="description" content="Complete your purchase safely with UPI, Cards, NetBanking or Cash on Delivery.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <!-- Razorpay Standard Checkout SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 36px;
+            align-items: start;
+        }
+        @media (max-width: 992px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .checkout-card {
+            background: #FFFFFF;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-2xl);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        .checkout-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            background: var(--gradient-primary);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<header class="site-header" id="site-header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="header-logo" aria-label="XORONIQ">
+                <span>XORO<span class="header-logo-dot">N</span>IQ</span>
+            </a>
+            <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--color-success);">
+                <span>🔒 256-Bit Encrypted Secure Checkout</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container" style="padding-top:36px;padding-bottom:72px;">
+        <h1 class="section-title" style="margin-bottom:28px;">Complete Your Order</h1>
+
+        <form id="checkout-form" class="checkout-grid">
+            <!-- LEFT: SHIPPING & PAYMENT DETAILS -->
+            <div>
+                <!-- STEP 1: CONTACT & DELIVERY ADDRESS -->
+                <div class="checkout-card">
+                    <div class="checkout-card-header">
+                        <div class="step-num">1</div>
+                        <h2 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;">Shipping &amp; Contact Details</h2>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div class="form-group">
+                            <label class="form-label" for="shipping-name">Full Name *</label>
+                            <input type="text" class="form-input" id="shipping-name" required placeholder="e.g. Rahul Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="shipping-phone">10-Digit Mobile Number *</label>
+                            <input type="tel" class="form-input" id="shipping-phone" required placeholder="e.g. 9876543210" maxlength="10">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="shipping-email">Email Address (for order updates &amp; invoice)</label>
+                        <input type="email" class="form-input" id="shipping-email" placeholder="e.g. rahul@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="shipping-address">Complete Street Address (Flat / House No, Street, Landmark) *</label>
+                        <input type="text" class="form-input" id="shipping-address" required placeholder="e.g. Flat 402, Lotus Towers, 5th Main Road">
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                        <div class="form-group">
+                            <label class="form-label" for="shipping-city">City / Town *</label>
+                            <input type="text" class="form-input" id="shipping-city" required placeholder="e.g. Mumbai">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="shipping-state">State / UT *</label>
+                            <select class="form-select" id="shipping-state" required>
+                                <!-- Populated by checkout.js -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="shipping-pincode">PIN Code *</label>
+                            <input type="text" class="form-input" id="shipping-pincode" required placeholder="e.g. 400001" maxlength="6">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: PAYMENT METHOD -->
+                <div class="checkout-card">
+                    <div class="checkout-card-header">
+                        <div class="step-num">2</div>
+                        <h2 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;">Payment Method</h2>
+                    </div>
+
+                    <div id="payment-methods-grid" style="display:flex;flex-direction:column;gap:12px;">
+                        <!-- Populated by checkout.js -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: ORDER REVIEW -->
+            <div>
+                <div class="order-summary-card">
+                    <div class="checkout-card-header" style="margin-bottom:16px;">
+                        <div class="step-num">3</div>
+                        <h3 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;">Order Items</h3>
+                    </div>
+
+                    <div id="checkout-items-list" style="max-height:260px;overflow-y:auto;margin-bottom:20px;">
+                        <!-- Populated by checkout.js -->
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Items Subtotal</span>
+                        <span id="checkout-subtotal" style="font-weight:700;">₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Coupon Discount</span>
+                        <span id="checkout-discount" style="color:var(--color-success);font-weight:700;">₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Express Delivery</span>
+                        <span id="checkout-shipping" style="font-weight:700;">FREE</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Final Amount</span>
+                        <span id="checkout-total" style="color:var(--color-accent);">₹0</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" id="place-order-btn" style="margin-top:24px;">
+                        Complete Order • ₹0
+                    </button>
+
+                    <div style="margin-top:16px;background:var(--color-surface-subtle);border-radius:var(--radius-md);padding:12px;font-size:12px;color:var(--color-text-secondary);text-align:center;">
+                        🛡️ 7-Day Money-Back Guarantee &amp; Easy Replacement on All Orders
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script type="module" src="/js/checkout.js"></script>
+</body>
+</html>

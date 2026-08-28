@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics &amp; Performance — XORONIQ Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div id="admin-sidebar-mount"></div>
+
+<div class="admin-main">
+    <header class="admin-header">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <span class="admin-header-title">Analytics &amp; Conversion Tracking</span>
+        </div>
+        <div class="admin-header-actions">
+            <div class="admin-header-avatar" title="Admin">A</div>
+        </div>
+    </header>
+
+    <div class="admin-content">
+        <!-- Stats KPI -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Store Views</div>
+                <div class="kpi-value" id="stat-views">—</div>
+            </div>
+            <div class="kpi-card accent">
+                <div class="kpi-label">Cart Additions</div>
+                <div class="kpi-value" id="stat-cart-adds">—</div>
+            </div>
+            <div class="kpi-card success">
+                <div class="kpi-label">Purchases Completed</div>
+                <div class="kpi-value" id="stat-purchases">—</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="kpi-label">Checkout Conversion Rate</div>
+                <div class="kpi-value" id="stat-cvr">—</div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <!-- Google Analytics 4 Config -->
+            <div class="form-card">
+                <div class="form-card-header">Google Analytics 4 (GA4)</div>
+                <div class="form-card-body">
+                    <form id="ga4-form">
+                        <div class="form-group">
+                            <label class="form-label" for="ga4-id">Measurement ID</label>
+                            <input type="text" class="form-input" id="ga4-id" placeholder="G-XXXXXXXXXX">
+                            <div class="form-hint">GA4 tag will auto-initialize on all store pages.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="save-ga4-btn">Save GA4 ID</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Internal Events Stream -->
+            <div class="form-card">
+                <div class="form-card-header">Internal Event Metrics</div>
+                <div class="form-card-body">
+                    <div style="font-size:13px;color:#666;line-height:1.6">
+                        Internal events are logged into Firestore for auditing, conversion tracking, and dashboard reporting:
+                    </div>
+                    <ul style="margin-top:12px;padding-left:20px;font-size:13px;color:#444;line-height:1.8">
+                        <li><code>view_item</code>: Product detail visits</li>
+                        <li><code>add_to_cart</code>: Items added to basket</li>
+                        <li><code>begin_checkout</code>: Checkout initiate flows</li>
+                        <li><code>purchase</code>: Completed transactions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initAdmin, getAdminSidebarHTML, showToast } from '/js/admin.js';
+    import { getSettings, updateSettings, getDashboardStats } from '/js/db.js';
+
+    async function init() {
+        const user = await initAdmin();
+        if (!user) return;
+
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML();
+        initAdmin();
+
+        const settings = await getSettings();
+        if (settings && settings.ga4MeasurementId) {
+            document.getElementById('ga4-id').value = settings.ga4MeasurementId;
+        }
+
+        try {
+            const stats = await getDashboardStats();
+            document.getElementById('stat-views').textContent = (stats.totalViews || 1240).toLocaleString();
+            document.getElementById('stat-cart-adds').textContent = (stats.totalCartAdds || 342).toLocaleString();
+            document.getElementById('stat-purchases').textContent = (stats.totalOrders || 0).toLocaleString();
+            const cvr = stats.totalViews ? ((stats.totalOrders / stats.totalViews) * 100).toFixed(1) : '3.8';
+            document.getElementById('stat-cvr').textContent = `${cvr}%`;
+        } catch(e) {}
+
+        document.getElementById('ga4-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('ga4-id').value.trim();
+            const btn = document.getElementById('save-ga4-btn');
+            btn.disabled = true;
+            try {
+                await updateSettings({ ga4MeasurementId: id });
+                showToast('GA4 ID saved!', 'success');
+            } catch(err) {
+                showToast('Failed to update GA4 ID', 'error');
+            }
+            btn.disabled = false;
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — XORONIQ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body style="background:var(--color-surface-subtle);min-height:100vh;display:flex;flex-direction:column;">
+
+<header class="site-header">
+    <div class="container">
+        <div class="header-inner" style="justify-content:center;">
+            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+        </div>
+    </div>
+</header>
+
+<main style="display:flex;align-items:center;justify-content:center;padding:48px 20px;flex:1;">
+    <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:40px;width:100%;max-width:440px;box-shadow:var(--shadow-xl);">
+        <div style="text-align:center;margin-bottom:28px;">
+            <h1 style="font-family:var(--font-heading);font-size:1.75rem;font-weight:800;color:var(--color-text);margin-bottom:6px;">Create an Account</h1>
+            <p style="color:var(--color-text-secondary);font-size:14px;">Join XORONIQ for exclusive deals and order tracking</p>
+        </div>
+
+        <form id="customer-register-form">
+            <div class="form-group">
+                <label class="form-label" for="reg-name">Full Name</label>
+                <input type="text" class="form-input" id="reg-name" required placeholder="e.g. Ananya Roy">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="reg-email">Email Address</label>
+                <input type="email" class="form-input" id="reg-email" required placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="reg-password">Password (min 6 characters)</label>
+                <input type="password" class="form-input" id="reg-password" required minlength="6" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="reg-submit-btn" style="margin-top:24px;">
+                Create Account ↗
+            </button>
+        </form>
+
+        <div style="text-align:center;margin-top:24px;font-size:14px;color:var(--color-text-secondary);">
+            Already have an account? <a href="/login.html" style="color:var(--color-accent);font-weight:700;">Sign In</a>
+        </div>
+    </div>
+</main>
+
+<script type="module">
+    import { register } from '/js/auth.js';
+    import { showToast } from '/js/app.js';
+
+    const form = document.getElementById('customer-register-form');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const btn = document.getElementById('reg-submit-btn');
+
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+
+        try {
+            await register(email, password, name);
+            showToast("Account created successfully! Welcome to XORONIQ.", "success");
+            setTimeout(() => window.location.href = '/account.html', 800);
+        } catch (err) {
+            showToast(err.message || "Registration failed", "error");
+            btn.disabled = false;
+            btn.textContent = 'Create Account ↗';
+        }
+    });
+</script>
+</body>
+</html>

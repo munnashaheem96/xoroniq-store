@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login — XORONIQ</title>
+    <meta name="description" content="Sign in to your XORONIQ customer account to track orders and manage wishlist.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body style="background:var(--color-surface-subtle);min-height:100vh;display:flex;flex-direction:column;">
+
+<header class="site-header">
+    <div class="container">
+        <div class="header-inner" style="justify-content:center;">
+            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+        </div>
+    </div>
+</header>
+
+<main style="display:flex;align-items:center;justify-content:center;padding:48px 20px;flex:1;">
+    <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:40px;width:100%;max-width:440px;box-shadow:var(--shadow-xl);">
+        <div style="text-align:center;margin-bottom:28px;">
+            <h1 style="font-family:var(--font-heading);font-size:1.75rem;font-weight:800;color:var(--color-text);margin-bottom:6px;">Welcome Back</h1>
+            <p style="color:var(--color-text-secondary);font-size:14px;">Sign in to access your orders and profile</p>
+        </div>
+
+        <form id="customer-login-form">
+            <div class="form-group">
+                <label class="form-label" for="login-email">Email Address</label>
+                <input type="email" class="form-input" id="login-email" required placeholder="name@example.com">
+            </div>
+
+            <div class="form-group">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <label class="form-label" for="login-password" style="margin-bottom:0;">Password</label>
+                </div>
+                <input type="password" class="form-input" id="login-password" required placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-submit-btn" style="margin-top:24px;">
+                Sign In ↗
+            </button>
+        </form>
+
+        <div style="text-align:center;margin-top:24px;font-size:14px;color:var(--color-text-secondary);">
+            Don't have an account? <a href="/register.html" style="color:var(--color-accent);font-weight:700;">Create One</a>
+        </div>
+    </div>
+</main>
+
+<script type="module">
+    import { login } from '/js/auth.js';
+    import { showToast, getUrlParam } from '/js/app.js';
+
+    const form = document.getElementById('customer-login-form');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('login-submit-btn');
+
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+
+        try {
+            await login(email, password);
+            showToast("Welcome back!", "success");
+            const returnTo = getUrlParam('returnTo') || '/account.html';
+            setTimeout(() => window.location.href = returnTo, 600);
+        } catch (err) {
+            showToast(err.message || "Failed to sign in", "error");
+            btn.disabled = false;
+            btn.textContent = 'Sign In ↗';
+        }
+    });
+</script>
+</body>
+</html>

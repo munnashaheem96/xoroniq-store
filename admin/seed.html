@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Seeder — XORONIQ Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div id="admin-sidebar-mount"></div>
+
+<div class="admin-main">
+    <header class="admin-header">
+        <span class="admin-header-title">Database Initializer &amp; Demo Data</span>
+    </header>
+
+    <div class="admin-content">
+        <div style="max-width:700px">
+            <div class="form-card">
+                <div class="form-card-header">1-Click Demo Data Generator</div>
+                <div class="form-card-body">
+                    <p style="font-size:14px;color:#555;line-height:1.6;margin-bottom:20px">
+                        Use this utility to populate your Firestore database with initial categories (Electronics, Fashion, Home, Lifestyle), 
+                        starter demo products with Cloudinary image placeholders, homepage hero banners, welcome coupons, and default store settings.
+                    </p>
+
+                    <div id="seed-log" style="background:#1A1A2E;color:#4ADE80;font-family:monospace;font-size:12px;padding:16px;border-radius:8px;height:180px;overflow-y:auto;margin-bottom:20px;display:none"></div>
+
+                    <button class="btn btn-primary btn-lg" id="run-seed-btn">
+                        ⚡ Seed Initial Store Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initAdmin, getAdminSidebarHTML, showToast } from '/js/admin.js';
+    import { seedDatabase } from '/js/db.js';
+
+    async function init() {
+        const user = await initAdmin();
+        if (!user) return;
+
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML();
+        initAdmin();
+
+        const btn = document.getElementById('run-seed-btn');
+        const logBox = document.getElementById('seed-log');
+
+        btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            btn.textContent = 'Seeding Data...';
+            logBox.style.display = 'block';
+            logBox.innerHTML = '> Initializing seed process...\n';
+
+            try {
+                logBox.innerHTML += '> Creating store settings & banner...\n';
+                logBox.innerHTML += '> Seeding categories & products...\n';
+                const result = await seedDatabase();
+                logBox.innerHTML += `> Success: ${result.message}\n`;
+                logBox.innerHTML += '> Database & local store is ready!\n';
+                showToast('Database seeded successfully!', 'success');
+            } catch(e) {
+                logBox.innerHTML += `> Error: ${e.message}\n`;
+                showToast('Seeding encountered an issue: ' + e.message, 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '⚡ Re-Seed Store Data';
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

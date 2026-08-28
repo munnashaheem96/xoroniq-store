@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Settings — XORONIQ Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div id="admin-sidebar-mount"></div>
+
+<div class="admin-main">
+    <header class="admin-header">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <span class="admin-header-title">Store &amp; Payment Gateway Configuration</span>
+        </div>
+        <div class="admin-header-actions">
+            <div class="admin-header-avatar" title="Admin">A</div>
+        </div>
+    </header>
+
+    <div class="admin-content">
+        <form id="settings-form">
+            <div class="settings-grid">
+                
+                <!-- General Store Info -->
+                <div class="form-card">
+                    <div class="form-card-header">General Information</div>
+                    <div class="form-card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="set-store-name">Store Name</label>
+                            <input type="text" class="form-input" id="set-store-name" value="XORONIQ">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="set-tagline">Tagline</label>
+                            <input type="text" class="form-input" id="set-tagline" value="Smart Finds. Everyday Essentials.">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="set-email">Support Email</label>
+                            <input type="email" class="form-input" id="set-email" value="support@xoroniq.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="set-phone">Support WhatsApp / Phone</label>
+                            <input type="tel" class="form-input" id="set-phone" value="+91 98765 43210">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping & Fees -->
+                <div class="form-card">
+                    <div class="form-card-header">Shipping &amp; Delivery Rules</div>
+                    <div class="form-card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="set-ship-fee">Standard Shipping Fee (₹)</label>
+                            <input type="number" class="form-input" id="set-ship-fee" value="49" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="set-free-thresh">Free Shipping Threshold (₹)</label>
+                            <input type="number" class="form-input" id="set-free-thresh" value="999" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="set-tax-rate">Estimated Tax Rate (%)</label>
+                            <input type="number" class="form-input" id="set-tax-rate" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="set-currency">Currency Code</label>
+                            <input type="text" class="form-input" id="set-currency" value="INR" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Razorpay Payment Gateway Card -->
+                <div class="form-card" style="grid-column:1 / -1;border-color:rgba(79, 70, 229, 0.4);">
+                    <div class="form-card-header" style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span>💳 Razorpay Payment Gateway (UPI, Cards, Netbanking)</span>
+                        </div>
+                        <span class="badge badge-primary">Official Integration</span>
+                    </div>
+                    <div class="form-card-body">
+                        <p style="font-size:13px;color:#94A3B8;margin-bottom:16px;">
+                            Enter your Razorpay API credentials from the Razorpay Dashboard (Settings → API Keys). In test mode, use your test key.
+                        </p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                            <div class="form-group">
+                                <label class="form-label" for="set-razorpay-key">Razorpay Key ID</label>
+                                <input type="text" class="form-input" id="set-razorpay-key" placeholder="rzp_test_... or rzp_live_...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="set-razorpay-secret">Razorpay Key Secret</label>
+                                <input type="password" class="form-input" id="set-razorpay-secret" placeholder="••••••••••••••••">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="margin-top:24px">
+                <button type="submit" class="btn btn-primary btn-lg" id="save-settings-btn">Save All Configuration</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    import { initAdmin, getAdminSidebarHTML, showToast } from '/js/admin.js';
+    import { getSettings, updateSettings } from '/js/db.js';
+
+    async function init() {
+        const user = await initAdmin();
+        if (!user) return;
+
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML();
+        initAdmin();
+
+        try {
+            const s = await getSettings();
+            if (s) {
+                if (s.storeName) document.getElementById('set-store-name').value = s.storeName;
+                if (s.tagline) document.getElementById('set-tagline').value = s.tagline;
+                if (s.supportEmail) document.getElementById('set-email').value = s.supportEmail;
+                if (s.supportPhone) document.getElementById('set-phone').value = s.supportPhone;
+                if (s.shippingFee !== undefined) document.getElementById('set-ship-fee').value = s.shippingFee;
+                if (s.freeShippingThreshold !== undefined) document.getElementById('set-free-thresh').value = s.freeShippingThreshold;
+                if (s.taxRate !== undefined) document.getElementById('set-tax-rate').value = s.taxRate;
+                if (s.razorpayKeyId) document.getElementById('set-razorpay-key').value = s.razorpayKeyId;
+                if (s.razorpayKeySecret) document.getElementById('set-razorpay-secret').value = s.razorpayKeySecret;
+            }
+        } catch(e) {}
+
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-settings-btn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                await updateSettings({
+                    storeName: document.getElementById('set-store-name').value.trim(),
+                    tagline: document.getElementById('set-tagline').value.trim(),
+                    supportEmail: document.getElementById('set-email').value.trim(),
+                    supportPhone: document.getElementById('set-phone').value.trim(),
+                    shippingFee: parseFloat(document.getElementById('set-ship-fee').value) || 0,
+                    freeShippingThreshold: parseFloat(document.getElementById('set-free-thresh').value) || 0,
+                    taxRate: parseFloat(document.getElementById('set-tax-rate').value) || 0,
+                    razorpayKeyId: document.getElementById('set-razorpay-key').value.trim(),
+                    razorpayKeySecret: document.getElementById('set-razorpay-secret').value.trim(),
+                });
+                showToast('Settings & Razorpay configuration saved!', 'success');
+            } catch(err) {
+                showToast('Failed to save settings', 'error');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Save All Configuration';
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

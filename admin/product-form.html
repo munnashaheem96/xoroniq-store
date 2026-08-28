@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management — XORONIQ Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div id="admin-sidebar-mount"></div>
+
+<div class="admin-main">
+    <header class="admin-header">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="20" y2="6"></line><line x1="3" y1="12" x2="20" y2="12"></line><line x1="3" y1="18" x2="20" y2="18"></line></svg>
+            </button>
+            <span class="admin-header-title" id="form-page-title">Add New Product</span>
+        </div>
+        <div class="admin-header-actions">
+            <a href="/admin/products.html" class="btn btn-ghost btn-sm">Cancel</a>
+            <button type="submit" form="product-form" class="btn btn-primary btn-sm" id="save-product-btn">Save Product</button>
+            <div class="admin-header-avatar" title="Admin">A</div>
+        </div>
+    </header>
+
+    <div class="admin-content">
+        <form id="product-form" novalidate>
+            <div class="product-form-layout">
+                
+                <!-- Main Form Column -->
+                <div>
+                    <!-- Basic Information -->
+                    <div class="form-card">
+                        <div class="form-card-header">Basic Information</div>
+                        <div class="form-card-body">
+                            <div class="form-group">
+                                <label class="form-label form-label-required" for="product-name">Product Title</label>
+                                <input type="text" class="form-input" id="product-name" placeholder="e.g. Ultra Slim Wireless Smart Watch" required>
+                                <div class="form-error" id="name-err"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                                        <label class="form-label form-label-required" for="product-category" style="margin-bottom:0">Category</label>
+                                        <button type="button" class="btn btn-ghost btn-sm" id="quick-add-cat-btn" style="padding:2px 8px;font-size:11px;color:var(--color-primary);cursor:pointer">+ Quick Add</button>
+                                    </div>
+                                    <select class="form-select" id="product-category" required>
+                                        <option value="">Loading categories...</option>
+                                    </select>
+                                    <div class="form-error" id="category-err"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="product-sku">SKU (Stock Keeping Unit)</label>
+                                    <input type="text" class="form-input" id="product-sku" placeholder="e.g. SW-001">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="product-short-desc">Short Summary</label>
+                                <input type="text" class="form-input" id="product-short-desc" placeholder="Brief 1-2 sentence highlight for search & previews">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label form-label-required" for="product-desc">Full Description</label>
+                                <textarea class="form-textarea" id="product-desc" rows="6" placeholder="Detailed product description, features, materials, and benefits..." required></textarea>
+                                <div class="form-error" id="desc-err"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing & Inventory -->
+                    <div class="form-card">
+                        <div class="form-card-header">Pricing & Inventory</div>
+                        <div class="form-card-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label form-label-required" for="product-mrp">MRP / Original Price (₹)</label>
+                                    <input type="number" class="form-input" id="product-mrp" placeholder="e.g. 2499" min="1" step="1" required>
+                                    <div class="form-error" id="mrp-err"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label form-label-required" for="product-selling-price">Selling Price (₹)</label>
+                                    <input type="number" class="form-input" id="product-selling-price" placeholder="e.g. 999" min="1" step="1" required>
+                                    <div class="form-error" id="selling-price-err"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="discount-preview" id="discount-preview">
+                                Calculated Discount: <span id="discount-pct-text">0%</span> OFF
+                            </div>
+
+                            <div class="form-row" style="margin-top:16px">
+                                <div class="form-group">
+                                    <label class="form-label form-label-required" for="product-stock">Stock Quantity</label>
+                                    <input type="number" class="form-input" id="product-stock" placeholder="e.g. 50" min="0" value="10" required>
+                                    <div class="form-error" id="stock-err"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="product-rating">Initial Rating (1-5)</label>
+                                    <input type="number" class="form-input" id="product-rating" placeholder="4.8" min="1" max="5" step="0.1" value="4.8">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Specifications -->
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <span>Key Specifications</span>
+                            <button type="button" class="btn btn-ghost btn-sm" id="add-spec-btn">+ Add Row</button>
+                        </div>
+                        <div class="form-card-body">
+                            <div class="spec-builder" id="spec-builder">
+                                <div class="spec-item">
+                                    <input type="text" class="form-input spec-key" placeholder="Key (e.g. Material)" value="Material">
+                                    <input type="text" class="form-input spec-val" placeholder="Value (e.g. Aluminum Alloy)" value="Premium Alloy">
+                                    <button type="button" class="table-action-btn danger remove-spec-btn" title="Delete">✕</button>
+                                </div>
+                                <div class="spec-item">
+                                    <input type="text" class="form-input spec-key" placeholder="Key" value="Warranty">
+                                    <input type="text" class="form-input spec-val" placeholder="Value" value="6 Months Brand Warranty">
+                                    <button type="button" class="table-action-btn danger remove-spec-btn" title="Delete">✕</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Form Column (Media & Flags) -->
+                <div>
+                    <!-- Cloudinary Images Manager -->
+                    <div class="form-card">
+                        <div class="form-card-header">Cloudinary Images</div>
+                        <div class="form-card-body image-manager">
+                            <div style="font-size:12px;color:#666;line-height:1.5">
+                                Paste direct Cloudinary or image CDN URLs below.
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label form-label-required">Primary Display Image</label>
+                                <input type="url" class="form-input" id="primary-image-url" placeholder="https://res.cloudinary.com/..." required>
+                                <div class="form-error" id="image-err"></div>
+                            </div>
+
+                            <div class="image-preview-primary" id="primary-image-preview">
+                                <div class="image-preview-placeholder">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                    <p>Primary Image Preview</p>
+                                </div>
+                                <img id="primary-img-tag" src="" alt="Primary Preview">
+                            </div>
+
+                            <div style="margin-top:12px">
+                                <label class="form-label">Additional Gallery Images</label>
+                                <div class="additional-images" id="additional-images-list"></div>
+                                <div class="image-url-input-group" style="margin-top:8px">
+                                    <input type="url" id="new-gallery-url" placeholder="Paste extra image URL...">
+                                    <button type="button" class="btn btn-ghost btn-sm" id="add-gallery-img-btn">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visibility & Badges -->
+                    <div class="form-card">
+                        <div class="form-card-header">Status & Badges</div>
+                        <div class="form-card-body product-flags">
+                            <div class="product-flag-item">
+                                <div>
+                                    <div class="product-flag-label">Published / Active</div>
+                                    <div class="product-flag-hint">Show this item in customer storefront</div>
+                                </div>
+                                <input type="checkbox" id="flag-active" checked style="width:20px;height:20px;accent-color:var(--color-primary)">
+                            </div>
+                            <div class="product-flag-item">
+                                <div>
+                                    <div class="product-flag-label">Featured Collection</div>
+                                    <div class="product-flag-hint">Highlight on homepage featured row</div>
+                                </div>
+                                <input type="checkbox" id="flag-featured" style="width:20px;height:20px;accent-color:var(--color-primary)">
+                            </div>
+                            <div class="product-flag-item">
+                                <div>
+                                    <div class="product-flag-label">Trending Now</div>
+                                    <div class="product-flag-hint">Show in hot &amp; trending section</div>
+                                </div>
+                                <input type="checkbox" id="flag-trending" checked style="width:20px;height:20px;accent-color:var(--color-primary)">
+                            </div>
+                            <div class="product-flag-item">
+                                <div>
+                                    <div class="product-flag-label">Best Seller</div>
+                                    <div class="product-flag-hint">Add Best Seller badge and filter</div>
+                                </div>
+                                <input type="checkbox" id="flag-bestseller" style="width:20px;height:20px;accent-color:var(--color-primary)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    import { initAdmin, getAdminSidebarHTML, showToast } from '/js/admin.js';
+    import { getCategories, getProductById, createProduct, updateProduct, createCategory } from '/js/db.js';
+    import { calcDiscount, getUrlParam } from '/js/app.js';
+
+    let productId = null;
+    let categoriesList = [];
+    let galleryImages = [];
+
+    async function init() {
+        const user = await initAdmin();
+        if (!user) return;
+
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML();
+        initAdmin();
+
+        setupQuickAddCategory();
+        await loadCategoryDropdown();
+
+        productId = getUrlParam('id');
+        if (productId) {
+            document.getElementById('form-page-title').textContent = 'Edit Product';
+            document.getElementById('save-product-btn').textContent = 'Update Product';
+            await loadExistingProduct(productId);
+        }
+
+        setupPriceDiscountCalc();
+        setupImagePreviews();
+        setupSpecsBuilder();
+        setupFormSubmit();
+    }
+
+    async function loadCategoryDropdown(selectedId = null) {
+        const select = document.getElementById('product-category');
+        try {
+            categoriesList = await getCategories(false);
+            if (!categoriesList || categoriesList.length === 0) {
+                select.innerHTML = '<option value="">No categories found. Click + Quick Add</option>';
+                return;
+            }
+            select.innerHTML = '<option value="">Select Category</option>' +
+                categoriesList.map(c => `<option value="${c.id}" ${selectedId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+            if (selectedId) {
+                select.value = selectedId;
+            }
+        } catch(e) {
+            console.error('Failed to load categories', e);
+            select.innerHTML = '<option value="">Error loading categories</option>';
+        }
+    }
+
+    function setupQuickAddCategory() {
+        document.getElementById('quick-add-cat-btn')?.addEventListener('click', async () => {
+            const catName = prompt('Enter new Category Name (e.g. Wireless Audio, Smart Watches):');
+            if (!catName || !catName.trim()) return;
+
+            const name = catName.trim();
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+            try {
+                const newId = await createCategory({ name, slug, isActive: true });
+                showToast(`Category "${name}" created!`, 'success');
+                await loadCategoryDropdown(newId || slug);
+            } catch(err) {
+                showToast('Failed to create category: ' + err.message, 'error');
+            }
+        });
+    }
+
+    async function loadExistingProduct(id) {
+        try {
+            const p = await getProductById(id);
+            if (!p) {
+                showToast('Product not found', 'error');
+                return;
+            }
+            document.getElementById('product-name').value = p.name || '';
+            if (p.categoryId) {
+                await loadCategoryDropdown(p.categoryId);
+                document.getElementById('product-category').value = p.categoryId;
+            }
+            document.getElementById('product-sku').value = p.sku || '';
+            document.getElementById('product-short-desc').value = p.shortDescription || '';
+            document.getElementById('product-desc').value = p.description || '';
+            document.getElementById('product-mrp').value = p.mrp || '';
+            document.getElementById('product-selling-price').value = p.sellingPrice || '';
+            document.getElementById('product-stock').value = p.stock ?? 10;
+            document.getElementById('product-rating').value = p.rating ?? 4.8;
+
+
+            document.getElementById('flag-active').checked = p.isActive !== false;
+            document.getElementById('flag-featured').checked = !!p.isFeatured;
+            document.getElementById('flag-trending').checked = !!p.isTrending;
+            document.getElementById('flag-bestseller').checked = !!p.isBestSeller;
+
+            if (p.primaryImage) {
+                document.getElementById('primary-image-url').value = p.primaryImage;
+                updatePrimaryPreview(p.primaryImage);
+            }
+
+            galleryImages = p.images ? p.images.filter(img => img !== p.primaryImage) : [];
+            renderGalleryList();
+
+            // Specs
+            if (p.specifications && Object.keys(p.specifications).length) {
+                const builder = document.getElementById('spec-builder');
+                builder.innerHTML = Object.entries(p.specifications).map(([k, v]) => `
+                <div class="spec-item">
+                    <input type="text" class="form-input spec-key" value="${k}">
+                    <input type="text" class="form-input spec-val" value="${v}">
+                    <button type="button" class="table-action-btn danger remove-spec-btn" title="Delete">✕</button>
+                </div>`).join('');
+            }
+
+            calcDiscountUI();
+        } catch(e) {
+            showToast('Error loading product data', 'error');
+        }
+    }
+
+    function setupPriceDiscountCalc() {
+        const mrpInput = document.getElementById('product-mrp');
+        const spInput = document.getElementById('product-selling-price');
+
+        mrpInput.addEventListener('input', calcDiscountUI);
+        spInput.addEventListener('input', calcDiscountUI);
+    }
+
+    function calcDiscountUI() {
+        const mrp = parseFloat(document.getElementById('product-mrp').value) || 0;
+        const sp = parseFloat(document.getElementById('product-selling-price').value) || 0;
+        const preview = document.getElementById('discount-preview');
+        const text = document.getElementById('discount-pct-text');
+
+        if (mrp > sp && sp > 0) {
+            const disc = calcDiscount(mrp, sp);
+            text.textContent = `${disc}%`;
+            preview.classList.add('visible');
+        } else {
+            preview.classList.remove('visible');
+        }
+    }
+
+    function setupImagePreviews() {
+        const primaryUrlInput = document.getElementById('primary-image-url');
+        primaryUrlInput.addEventListener('input', () => {
+            updatePrimaryPreview(primaryUrlInput.value.trim());
+        });
+
+        document.getElementById('add-gallery-img-btn').addEventListener('click', () => {
+            const urlInput = document.getElementById('new-gallery-url');
+            const url = urlInput.value.trim();
+            if (url) {
+                galleryImages.push(url);
+                urlInput.value = '';
+                renderGalleryList();
+            }
+        });
+    }
+
+    function updatePrimaryPreview(url) {
+        const imgTag = document.getElementById('primary-img-tag');
+        const placeholder = document.querySelector('#primary-image-preview .image-preview-placeholder');
+        if (url) {
+            imgTag.src = url;
+            imgTag.classList.add('loaded');
+            placeholder.style.display = 'none';
+        } else {
+            imgTag.src = '';
+            imgTag.classList.remove('loaded');
+            placeholder.style.display = 'block';
+        }
+    }
+
+    function renderGalleryList() {
+        const container = document.getElementById('additional-images-list');
+        container.innerHTML = galleryImages.map((img, idx) => `
+        <div class="image-url-item">
+            <img class="image-url-thumb" src="${img}" alt="Thumb" onerror="this.style.opacity='0.2'">
+            <span class="image-url-field" title="${img}">${img}</span>
+            <button type="button" class="table-action-btn danger remove-gallery-btn" data-index="${idx}">✕</button>
+        </div>`).join('');
+
+        container.querySelectorAll('.remove-gallery-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.dataset.index);
+                galleryImages.splice(idx, 1);
+                renderGalleryList();
+            });
+        });
+    }
+
+    function setupSpecsBuilder() {
+        document.getElementById('add-spec-btn').addEventListener('click', () => {
+            const builder = document.getElementById('spec-builder');
+            const row = document.createElement('div');
+            row.className = 'spec-item';
+            row.innerHTML = `
+                <input type="text" class="form-input spec-key" placeholder="Key">
+                <input type="text" class="form-input spec-val" placeholder="Value">
+                <button type="button" class="table-action-btn danger remove-spec-btn" title="Delete">✕</button>
+            `;
+            builder.appendChild(row);
+        });
+
+        document.getElementById('spec-builder').addEventListener('click', (e) => {
+            if (e.target.closest('.remove-spec-btn')) {
+                e.target.closest('.spec-item').remove();
+            }
+        });
+    }
+
+    function setupFormSubmit() {
+        document.getElementById('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('product-name').value.trim();
+            const categoryId = document.getElementById('product-category').value;
+            const description = document.getElementById('product-desc').value.trim();
+            const mrp = parseFloat(document.getElementById('product-mrp').value);
+            const sellingPrice = parseFloat(document.getElementById('product-selling-price').value);
+            const stock = parseInt(document.getElementById('product-stock').value) || 0;
+            const primaryImage = document.getElementById('primary-image-url').value.trim();
+
+            if (!name || !categoryId || !description || isNaN(mrp) || isNaN(sellingPrice) || !primaryImage) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            const categoryObj = categoriesList.find(c => c.id === categoryId);
+            const categoryName = categoryObj ? categoryObj.name : '';
+
+            // Extract specs
+            const specifications = {};
+            document.querySelectorAll('#spec-builder .spec-item').forEach(item => {
+                const k = item.querySelector('.spec-key').value.trim();
+                const v = item.querySelector('.spec-val').value.trim();
+                if (k && v) specifications[k] = v;
+            });
+
+            const productData = {
+                name,
+                categoryId,
+                categoryName,
+                sku: document.getElementById('product-sku').value.trim() || 'SKU-' + Date.now().toString().slice(-4),
+                shortDescription: document.getElementById('product-short-desc').value.trim(),
+                description,
+                mrp,
+                sellingPrice,
+                discountPercentage: calcDiscount(mrp, sellingPrice),
+                stock,
+                rating: parseFloat(document.getElementById('product-rating').value) || 4.8,
+                primaryImage,
+                images: [primaryImage, ...galleryImages],
+                specifications,
+                isActive: document.getElementById('flag-active').checked,
+                isFeatured: document.getElementById('flag-featured').checked,
+                isTrending: document.getElementById('flag-trending').checked,
+                isBestSeller: document.getElementById('flag-bestseller').checked
+            };
+
+            const saveBtn = document.getElementById('save-product-btn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                if (productId) {
+                    await updateProduct(productId, productData);
+                    showToast('Product updated successfully!', 'success');
+                } else {
+                    await createProduct(productData);
+                    showToast('Product created successfully!', 'success');
+                }
+                setTimeout(() => {
+                    window.location.href = '/admin/products.html';
+                }, 1000);
+            } catch(err) {
+                console.error(err);
+                showToast('Failed to save product: ' + err.message, 'error');
+                saveBtn.disabled = false;
+                saveBtn.textContent = productId ? 'Update Product' : 'Save Product';
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

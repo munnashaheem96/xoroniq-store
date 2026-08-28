@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupons &amp; Discounts — XORONIQ Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div id="admin-sidebar-mount"></div>
+
+<div class="admin-main">
+    <header class="admin-header">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <span class="admin-header-title">Coupons &amp; Discounts</span>
+        </div>
+        <div class="admin-header-actions">
+            <div class="admin-header-avatar" title="Admin">A</div>
+        </div>
+    </header>
+
+    <div class="admin-content">
+        <div style="display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start">
+            
+            <div class="form-card">
+                <div class="form-card-header">Create Promo Code</div>
+                <div class="form-card-body">
+                    <form id="coupon-form">
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="coup-code">Promo Code</label>
+                            <input type="text" class="form-input" id="coup-code" placeholder="e.g. FESTIVE20" style="text-transform:uppercase;font-weight:700" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="coup-type">Discount Type</label>
+                            <select class="form-select" id="coup-type">
+                                <option value="percentage">Percentage Off (%)</option>
+                                <option value="flat">Flat Amount Off (₹)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="coup-value">Discount Value</label>
+                            <input type="number" class="form-input" id="coup-value" placeholder="e.g. 10 or 200" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="coup-min-spend">Minimum Order Value (₹)</label>
+                            <input type="number" class="form-input" id="coup-min-spend" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="coup-max-disc">Max Discount Limit (₹) <small>(% only)</small></label>
+                            <input type="number" class="form-input" id="coup-max-disc" placeholder="500">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full" id="save-coup-btn">Create Coupon</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="admin-table-card">
+                <div class="admin-table-header">
+                    <h2 class="admin-table-title">Active Discount Codes</h2>
+                </div>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Discount</th>
+                                <th>Min. Spend</th>
+                                <th>Uses</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coupons-tbody">
+                            <tr><td colspan="6" class="table-empty">Loading coupons...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initAdmin, getAdminSidebarHTML, showToast, formatPrice } from '/js/admin.js';
+    import { getCoupons, createCoupon, deleteCoupon } from '/js/db.js';
+
+    let coupons = [];
+
+    async function init() {
+        const user = await initAdmin();
+        if (!user) return;
+
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML();
+        initAdmin();
+
+        await loadCoupons();
+        setupForm();
+    }
+
+    async function loadCoupons() {
+        const tbody = document.getElementById('coupons-tbody');
+        try {
+            coupons = await getCoupons();
+            if (!coupons.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No coupons created yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = coupons.map(c => `
+            <tr>
+                <td><strong><code>${c.code}</code></strong></td>
+                <td><span class="badge badge-success">${c.type === 'percentage' ? `${c.value}% OFF` : `₹${c.value} OFF`}</span></td>
+                <td>${c.minOrderValue ? formatPrice(c.minOrderValue) : 'None'}</td>
+                <td>${c.usageCount || 0}</td>
+                <td><span class="badge ${c.isActive ? 'badge-success' : 'badge-error'}">${c.isActive ? 'Active' : 'Inactive'}</span></td>
+                <td>
+                    <button class="table-action-btn danger delete-coup-btn" data-id="${c.id}" title="Delete">🗑</button>
+                </td>
+            </tr>`).join('');
+
+            document.querySelectorAll('.delete-coup-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (confirm('Delete this promo code?')) {
+                        try {
+                            await deleteCoupon(btn.dataset.id);
+                            showToast('Coupon removed', 'success');
+                            await loadCoupons();
+                        } catch(e) {
+                            showToast('Delete failed', 'error');
+                        }
+                    }
+                });
+            });
+        } catch(e) {
+            tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Failed to load coupons</td></tr>';
+        }
+    }
+
+    function setupForm() {
+        const form = document.getElementById('coupon-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('coup-code').value.toUpperCase().trim();
+            const type = document.getElementById('coup-type').value;
+            const value = parseFloat(document.getElementById('coup-value').value);
+            const minOrderValue = parseFloat(document.getElementById('coup-min-spend').value) || 0;
+            const maxDiscount = parseFloat(document.getElementById('coup-max-disc').value) || null;
+
+            if (!code || isNaN(value)) return;
+
+            const btn = document.getElementById('save-coup-btn');
+            btn.disabled = true;
+
+            try {
+                await createCoupon({ code, type, value, minOrderValue, maxDiscount, isActive: true, usageCount: 0 });
+                showToast(`Coupon ${code} created!`, 'success');
+                form.reset();
+                await loadCoupons();
+            } catch(err) {
+                showToast('Failed to create coupon', 'error');
+            }
+            btn.disabled = false;
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

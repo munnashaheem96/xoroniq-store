@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Catalog — XORONIQ</title>
+    <meta name="description" content="Explore our complete catalog of smart electronics, lifestyle accessories, and home goods. Free shipping on orders above ₹999.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <style>
+        .shop-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 36px;
+            align-items: start;
+        }
+        .filters-sidebar {
+            background: #FFFFFF;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            position: sticky;
+            top: 96px;
+        }
+        .filter-section {
+            border-bottom: 1px solid var(--color-border);
+            padding: 18px 0;
+        }
+        .filter-section:first-child { padding-top: 0; }
+        .filter-section:last-child { border-bottom: none; }
+        .filter-title {
+            font-family: var(--font-heading);
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 12px;
+        }
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+        }
+        .filter-option input[type="radio"],
+        .filter-option input[type="checkbox"] {
+            cursor: pointer;
+            accent-color: var(--color-accent);
+        }
+        .price-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP ANNOUNCEMENT BAR -->
+<div class="top-bar">
+    <div class="container">
+        <div class="top-bar-inner">
+            <span>⚡ Free Express Delivery on orders above ₹999 • All India Cash on Delivery</span>
+        </div>
+    </div>
+</div>
+
+<!-- SITE HEADER -->
+<header class="site-header" id="site-header">
+    <div class="container">
+        <div class="header-inner">
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"><span></span><span></span><span></span></span>
+            </button>
+
+            <a href="/" class="header-logo" aria-label="XORONIQ">
+                <span>XORO<span class="header-logo-dot">N</span>IQ</span>
+            </a>
+
+            <nav class="header-nav" id="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop.html" class="nav-link active">Shop All</a>
+                <a href="/shop.html?category=electronics" class="nav-link">Electronics</a>
+                <a href="/shop.html?category=home-kitchen" class="nav-link">Home &amp; Living</a>
+                <a href="/shop.html?sort=discount" class="nav-link">Deals</a>
+                <a href="/about.html" class="nav-link">About</a>
+                <a href="/contact.html" class="nav-link">Contact</a>
+            </nav>
+
+            <div class="header-search">
+                <svg class="header-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="search" class="header-search-input" id="search-input" placeholder="Search products..." autocomplete="off">
+                <div class="search-suggestions" id="search-suggestions"></div>
+            </div>
+
+            <div class="header-actions">
+                <a href="/wishlist.html" class="header-action-btn" aria-label="Wishlist" title="Wishlist">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    <span class="header-badge wishlist-count" style="display:none">0</span>
+                </a>
+                <a href="/cart.html" class="header-action-btn" aria-label="Shopping Cart" title="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+                    <span class="header-badge cart-count" style="display:none">0</span>
+                </a>
+                <a href="/account.html" class="header-action-btn" id="account-link" aria-label="Customer Portal" title="Account">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+<div id="nav-overlay"></div>
+
+<main>
+    <div class="container" style="padding-top:32px;padding-bottom:64px;">
+        <!-- Header Info -->
+        <div style="margin-bottom:28px;">
+            <nav class="breadcrumb">
+                <a href="/">Home</a>
+                <span class="breadcrumb-sep">›</span>
+                <span class="breadcrumb-current" id="breadcrumb-current">All Products</span>
+            </nav>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+                <div>
+                    <h1 class="section-title" id="shop-page-title" style="margin-bottom:4px;">All Products</h1>
+                    <p id="results-count" style="color:var(--color-text-secondary);font-size:0.875rem;">Loading catalog...</p>
+                </div>
+                <!-- Sort & Filter Bar -->
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <button class="btn btn-outline btn-sm" id="mobile-filter-btn" style="display:none;">
+                        ⚙ Filters
+                    </button>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <label for="sort-select" style="font-size:0.875rem;font-weight:600;color:var(--color-text-secondary);">Sort by:</label>
+                        <select class="form-select" id="sort-select" style="padding:8px 12px;font-size:0.875rem;border-radius:var(--radius-md);width:auto;">
+                            <option value="featured">Featured &amp; Curated</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="newest">Newest Arrivals</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="discount">Biggest Discount (%)</option>
+                            <option value="rating">Top Customer Rated</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Filter Badges -->
+            <div id="active-filters" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;"></div>
+        </div>
+
+        <div class="shop-layout">
+            <!-- FILTERS SIDEBAR -->
+            <aside class="filters-sidebar" id="filters-sidebar">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <h3 style="font-family:var(--font-heading);font-size:1.0625rem;font-weight:800;">Filters</h3>
+                    <button id="clear-filters" class="btn btn-ghost btn-sm" style="display:none;color:var(--color-accent);padding:0;">Clear All</button>
+                </div>
+
+                <!-- Collections -->
+                <div class="filter-section">
+                    <div class="filter-title">Collections</div>
+                    <div class="filter-options" id="category-filter-options">
+                        <!-- Populated by products.js -->
+                    </div>
+                </div>
+
+                <!-- Price Filter -->
+                <div class="filter-section">
+                    <div class="filter-title">Price Range (₹)</div>
+                    <div class="price-inputs">
+                        <input type="number" class="form-input" id="price-min" placeholder="Min ₹" style="padding:8px 10px;font-size:13px;">
+                        <input type="number" class="form-input" id="price-max" placeholder="Max ₹" style="padding:8px 10px;font-size:13px;">
+                    </div>
+                    <button class="btn btn-dark btn-sm btn-block" id="apply-price">Apply Range</button>
+                </div>
+
+                <!-- Rating Filter -->
+                <div class="filter-section">
+                    <div class="filter-title">Customer Rating</div>
+                    <div class="filter-options">
+                        <label class="filter-option"><input type="radio" name="rating" value="4"> 4★ &amp; above</label>
+                        <label class="filter-option"><input type="radio" name="rating" value="4.5"> 4.5★ &amp; above</label>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- PRODUCTS GRID -->
+            <section>
+                <div class="products-grid" id="products-grid">
+                    <!-- Populated by products.js -->
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<!-- SITE FOOTER -->
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <a href="/" class="footer-logo">XORO<span style="color:var(--color-accent);">N</span>IQ</a>
+                <p style="font-size:0.875rem;line-height:1.6;margin-bottom:20px;color:#94A3B8;">
+                    High-performance smart gadgets and curated everyday essentials for modern lifestyles.
+                </p>
+            </div>
+            <div>
+                <div class="footer-title">Collections</div>
+                <ul class="footer-links">
+                    <li><a href="/shop.html?category=electronics">Smart Electronics</a></li>
+                    <li><a href="/shop.html?category=home-kitchen">Home &amp; Smart Living</a></li>
+                    <li><a href="/shop.html?category=fashion">Apparel &amp; Fashion</a></li>
+                    <li><a href="/shop.html?category=beauty">Beauty &amp; Skincare</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="footer-title">Customer Care</div>
+                <ul class="footer-links">
+                    <li><a href="/account.html">My Account</a></li>
+                    <li><a href="/order-tracking.html">Track Shipment</a></li>
+                    <li><a href="/faq.html">FAQs</a></li>
+                    <li><a href="/contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="footer-title">Policies</div>
+                <ul class="footer-links">
+                    <li><a href="/policies/privacy.html">Privacy Policy</a></li>
+                    <li><a href="/policies/terms.html">Terms of Service</a></li>
+                    <li><a href="/policies/shipping.html">Shipping Policy</a></li>
+                    <li><a href="/policies/returns.html">Returns Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>© 2026 XORONIQ. All rights reserved.</div>
+        </div>
+    </div>
+</footer>
+
+<script type="module" src="/js/products.js"></script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Management — XORONIQ Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div id="admin-sidebar-mount"></div>
+
+<div class="admin-main">
+    <header class="admin-header">
+        <div style="display:flex;align-items:center;gap:12px">
+            <button class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Toggle sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <span class="admin-header-title">Orders Management</span>
+        </div>
+        <div class="admin-header-actions">
+            <div class="admin-header-avatar" title="Admin">A</div>
+        </div>
+    </header>
+
+    <div class="admin-content">
+        <div class="admin-table-card">
+            <!-- Filter Tabs -->
+            <div class="status-tabs" id="status-filter-tabs">
+                <button class="status-tab active" data-status="">All Orders</button>
+                <button class="status-tab" data-status="Pending">Pending</button>
+                <button class="status-tab" data-status="Confirmed">Confirmed</button>
+                <button class="status-tab" data-status="Shipped">Shipped</button>
+                <button class="status-tab" data-status="Delivered">Delivered</button>
+                <button class="status-tab" data-status="Cancelled">Cancelled</button>
+            </div>
+
+            <div class="admin-table-header">
+                <input type="text" class="admin-search-input" id="order-search" placeholder="Search by Order ID, Phone, Customer...">
+                <span id="order-count" style="font-size:13px;color:#666">0 Orders</span>
+            </div>
+
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer Info</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-tbody">
+                        <tr>
+                            <td colspan="8" class="table-empty">
+                                <div class="table-empty-icon">⏳</div>
+                                <div class="table-empty-text">Loading orders...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initAdmin, getAdminSidebarHTML, showToast, formatPrice, formatDate } from '/js/admin.js';
+    import { getOrders, updateOrderStatus } from '/js/db.js';
+
+    let allOrders = [];
+    let currentStatusFilter = '';
+
+    async function init() {
+        const user = await initAdmin();
+        if (!user) return;
+
+        document.getElementById('admin-sidebar-mount').innerHTML = getAdminSidebarHTML();
+        initAdmin();
+
+        await loadOrders();
+        setupFilters();
+    }
+
+    async function loadOrders() {
+        const tbody = document.getElementById('orders-tbody');
+        try {
+            const { orders } = await getOrders({ pageSize: 100, sortField: 'createdAt', sortDir: 'desc' });
+            allOrders = orders;
+            renderOrders(allOrders);
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="8" class="table-empty"><div class="table-empty-icon">⚠</div><div class="table-empty-text">Failed to load orders</div></td></tr>`;
+        }
+    }
+
+    function renderOrders(orders) {
+        const tbody = document.getElementById('orders-tbody');
+        document.getElementById('order-count').textContent = `${orders.length} Order${orders.length === 1 ? '' : 's'}`;
+
+        if (!orders.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="table-empty"><div class="table-empty-icon">📦</div><div class="table-empty-text">No orders found</div></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = orders.map(o => `
+        <tr data-id="${o.id}">
+            <td>
+                <strong>${o.orderId || o.id.slice(0,8).toUpperCase()}</strong>
+            </td>
+            <td><small>${formatDate(o.createdAt)}</small></td>
+            <td>
+                <div><strong>${o.customer?.name || 'Guest'}</strong></div>
+                <div style="font-size:11px;color:#666">${o.customer?.phone || ''} | ${o.shippingAddress?.city || ''}</div>
+            </td>
+            <td>
+                <span title="${(o.items || []).map(i => i.name).join(', ')}">
+                    ${(o.items || []).length} item(s)
+                </span>
+            </td>
+            <td><strong>${formatPrice(o.total)}</strong></td>
+            <td>
+                <span class="badge ${o.paymentMethod === 'COD' ? 'badge-secondary' : 'badge-success'}">${o.paymentMethod || 'COD'}</span>
+            </td>
+            <td>
+                <span class="badge ${getStatusBadge(o.orderStatus)}">${o.orderStatus}</span>
+            </td>
+            <td>
+                <select class="form-select status-select" data-id="${o.id}" style="padding:4px 8px;font-size:12px;width:120px">
+                    <option value="Pending" ${o.orderStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                    <option value="Confirmed" ${o.orderStatus === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                    <option value="Shipped" ${o.orderStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                    <option value="Delivered" ${o.orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                    <option value="Cancelled" ${o.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                </select>
+            </td>
+        </tr>`).join('');
+
+        attachStatusChangeListeners();
+    }
+
+    function getStatusBadge(status) {
+        switch(status) {
+            case 'Delivered': return 'badge-success';
+            case 'Confirmed':
+            case 'Shipped': return 'badge-primary';
+            case 'Cancelled': return 'badge-error';
+            default: return 'badge-warning';
+        }
+    }
+
+    function attachStatusChangeListeners() {
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', async () => {
+                const orderId = select.dataset.id;
+                const newStatus = select.value;
+                try {
+                    await updateOrderStatus(orderId, newStatus);
+                    showToast(`Order status updated to ${newStatus}`, 'success');
+                    const order = allOrders.find(o => o.id === orderId);
+                    if (order) order.orderStatus = newStatus;
+                    renderOrders(filterOrdersList());
+                } catch(e) {
+                    showToast('Failed to update status', 'error');
+                }
+            });
+        });
+    }
+
+    function setupFilters() {
+        document.querySelectorAll('.status-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentStatusFilter = tab.dataset.status;
+                renderOrders(filterOrdersList());
+            });
+        });
+
+        document.getElementById('order-search').addEventListener('input', () => {
+            renderOrders(filterOrdersList());
+        });
+    }
+
+    function filterOrdersList() {
+        const query = document.getElementById('order-search').value.toLowerCase().trim();
+        return allOrders.filter(o => {
+            const matchesStatus = !currentStatusFilter || o.orderStatus === currentStatusFilter;
+            const matchesQuery = !query || 
+                (o.orderId && o.orderId.toLowerCase().includes(query)) ||
+                (o.customer?.name && o.customer.name.toLowerCase().includes(query)) ||
+                (o.customer?.phone && o.customer.phone.includes(query)) ||
+                (o.shippingAddress?.city && o.shippingAddress.city.toLowerCase().includes(query));
+            return matchesStatus && matchesQuery;
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>

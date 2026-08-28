@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Support — XORONIQ</title>
+    <meta name="description" content="Reach XORONIQ customer care team for order inquiries, replacements, and business collaborations.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<header class="site-header" id="site-header">
+    <div class="container">
+        <div class="header-inner">
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"><span></span><span></span><span></span></span>
+            </button>
+
+            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+
+            <nav class="header-nav" id="nav-menu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop.html" class="nav-link">Shop All</a>
+                <a href="/about.html" class="nav-link">About</a>
+                <a href="/contact.html" class="nav-link active">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="/cart.html" class="header-action-btn" aria-label="Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+<div id="nav-overlay"></div>
+
+<main>
+    <div class="container" style="padding:48px 20px 80px;max-width:960px;">
+        <div class="section-tag">Help Desk</div>
+        <h1 class="section-title" style="margin-bottom:12px;">Get in Touch With Us</h1>
+        <p style="color:var(--color-text-secondary);font-size:16px;margin-bottom:40px;">
+            Have a question about an order, product compatibility, or returns? We're here to help.
+        </p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;">
+            <!-- Contact Form -->
+            <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:32px;box-shadow:var(--shadow-card);">
+                <h3 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;margin-bottom:20px;">Send a Direct Message</h3>
+                <form id="contact-form">
+                    <div class="form-group">
+                        <label class="form-label" for="c-name">Your Full Name *</label>
+                        <input type="text" class="form-input" id="c-name" required placeholder="e.g. Vikram Singh">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="c-email">Email Address *</label>
+                        <input type="email" class="form-input" id="c-email" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="c-order">Order ID (if applicable)</label>
+                        <input type="text" class="form-input" id="c-order" placeholder="e.g. ORD-XOR-10001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="c-msg">Your Message *</label>
+                        <textarea class="form-textarea" id="c-msg" rows="4" required placeholder="Describe your inquiry..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Send Message ↗</button>
+                </form>
+            </div>
+
+            <!-- Support Channels -->
+            <div>
+                <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:32px;margin-bottom:24px;">
+                    <h3 style="font-family:var(--font-heading);font-size:1.125rem;font-weight:800;margin-bottom:16px;">Quick Contact Channels</h3>
+                    
+                    <div style="display:flex;gap:14px;margin-bottom:20px;align-items:flex-start;">
+                        <div style="width:40px;height:40px;border-radius:var(--radius-md);background:rgba(79, 70, 229, 0.08);color:var(--color-accent);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">✉️</div>
+                        <div>
+                            <div style="font-weight:700;font-size:14px;">Customer Care Email</div>
+                            <div style="font-size:14px;color:var(--color-text-secondary);"><a href="mailto:support@xoroniq.com" style="color:var(--color-accent);font-weight:600;">support@xoroniq.com</a></div>
+                            <div style="font-size:12px;color:var(--color-text-muted);">Response within 24 business hours</div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="width:40px;height:40px;border-radius:var(--radius-md);background:rgba(16, 185, 129, 0.08);color:var(--color-success);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">💬</div>
+                        <div>
+                            <div style="font-weight:700;font-size:14px;">WhatsApp Hotline</div>
+                            <div style="font-size:14px;color:var(--color-text-secondary);"><strong style="color:var(--color-text);">+91 98765 43210</strong></div>
+                            <div style="font-size:12px;color:var(--color-text-muted);">Mon-Sat, 9:30 AM to 6:30 PM IST</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:var(--color-surface-subtle);border-radius:var(--radius-xl);padding:24px;border:1px solid var(--color-border);">
+                    <div style="font-weight:700;font-size:14px;margin-bottom:6px;">Looking for tracking?</div>
+                    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">You can track your package transit milestones in real-time on our tracking page.</p>
+                    <a href="/order-tracking.html" class="btn btn-outline btn-sm">Go to Live Tracking ↗</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-bottom" style="border-top:none;padding-top:0;">
+            <div>© 2026 XORONIQ. All rights reserved.</div>
+            <a href="/" style="color:#94A3B8;">Home</a>
+        </div>
+    </div>
+</footer>
+
+<script type="module">
+    import { showToast } from '/js/app.js';
+
+    document.getElementById('contact-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast("Message sent! Our support team will get back to you shortly.", "success");
+        e.target.reset();
+    });
+</script>
+</body>
+</html>

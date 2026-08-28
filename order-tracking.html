@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Shipment — XORONIQ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <style>
+        .timeline {
+            position: relative;
+            padding: 24px 0 24px 32px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 36px;
+            bottom: 36px;
+            left: 11px;
+            width: 3px;
+            background: var(--color-border);
+        }
+        .timeline-step {
+            position: relative;
+            margin-bottom: 32px;
+        }
+        .timeline-step:last-child { margin-bottom: 0; }
+        .timeline-dot {
+            position: absolute;
+            left: -32px;
+            top: 2px;
+            width: 25px;
+            height: 25px;
+            border-radius: var(--radius-full);
+            background: #FFFFFF;
+            border: 3px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+        }
+        .timeline-step.completed .timeline-dot {
+            border-color: var(--color-success);
+            background: var(--color-success);
+            color: #FFFFFF;
+        }
+        .timeline-step.active .timeline-dot {
+            border-color: var(--color-accent);
+            background: var(--color-accent);
+            color: #FFFFFF;
+            box-shadow: 0 0 0 4px var(--color-accent-glow);
+        }
+        .timeline-title {
+            font-family: var(--font-heading);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        .timeline-desc {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- SITE HEADER -->
+<header class="site-header" id="site-header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="header-logo"><span>XORO<span class="header-logo-dot">N</span>IQ</span></a>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop.html" class="nav-link">Shop</a>
+                <a href="/account.html" class="nav-link">My Account</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container" style="padding:40px 20px 80px;max-width:760px;">
+        <h1 class="section-title" style="margin-bottom:8px;">Live Shipment Tracker</h1>
+        <p style="color:var(--color-text-secondary);margin-bottom:32px;">Real-time dispatch telemetry and courier transit milestones</p>
+
+        <!-- Search Bar for Tracking -->
+        <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:24px;margin-bottom:32px;display:flex;gap:12px;box-shadow:var(--shadow-card);">
+            <input type="text" class="form-input" id="track-input" placeholder="Enter Order ID (e.g. ORD-XOR-10001)" style="font-weight:700;">
+            <button class="btn btn-primary" id="track-submit-btn" style="flex-shrink:0;">Track Order</button>
+        </div>
+
+        <!-- Tracking Results Card -->
+        <div style="background:#FFFFFF;border:1px solid var(--color-border);border-radius:var(--radius-2xl);padding:36px;box-shadow:var(--shadow-card);" id="tracking-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--color-border);padding-bottom:20px;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <div style="font-size:12px;color:var(--color-text-muted);text-transform:uppercase;font-weight:700;">Tracking Number</div>
+                    <div style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;color:var(--color-text);" id="trk-order-id">ORD-XOR-10001</div>
+                </div>
+                <div style="text-align:right;">
+                    <span class="badge badge-success" id="trk-status-badge" style="padding:6px 14px;font-size:13px;">In Transit</span>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline" id="tracking-timeline">
+                <div class="timeline-step completed">
+                    <div class="timeline-dot">✓</div>
+                    <div class="timeline-title">Order Received &amp; Verified</div>
+                    <div class="timeline-desc">Payment confirmed. Order sent to fulfillment hub.</div>
+                </div>
+                <div class="timeline-step completed">
+                    <div class="timeline-dot">✓</div>
+                    <div class="timeline-title">Packed &amp; Dispatched</div>
+                    <div class="timeline-desc">Handed over to Delhivery Express Courier. AWB: BLR98273615</div>
+                </div>
+                <div class="timeline-step active">
+                    <div class="timeline-dot">●</div>
+                    <div class="timeline-title">In Transit — In Routing Facility</div>
+                    <div class="timeline-desc">Package arrived at regional sorting hub and is en route.</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-title">Out for Delivery</div>
+                    <div class="timeline-desc">Courier executive will deliver to your doorstep.</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-title">Delivered</div>
+                    <div class="timeline-desc">Package successfully received by customer.</div>
+                </div>
+            </div>
+
+            <div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;color:var(--color-text-secondary);">Need assistance with this shipment?</span>
+                <a href="/contact.html" class="btn btn-outline btn-sm">Contact Courier Helpdesk</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- SITE FOOTER -->
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-bottom" style="border-top:none;padding-top:0;">
+            <div>© 2026 XORONIQ. All rights reserved.</div>
+            <a href="/" style="color:#94A3B8;">Back to Home</a>
+        </div>
+    </div>
+</footer>
+
+<script type="module">
+    import { getOrderById } from '/js/db.js';
+    import { getUrlParam } from '/js/app.js';
+
+    async function init() {
+        const id = getUrlParam('id');
+        const input = document.getElementById('track-input');
+        if (id && input) {
+            input.value = id;
+            loadTracking(id);
+        }
+
+        document.getElementById('track-submit-btn')?.addEventListener('click', () => {
+            const val = input.value.trim();
+            if (val) loadTracking(val);
+        });
+    }
+
+    async function loadTracking(id) {
+        const order = await getOrderById(id);
+        const orderIdEl = document.getElementById('trk-order-id');
+        const badgeEl = document.getElementById('trk-status-badge');
+
+        if (order) {
+            orderIdEl.textContent = order.orderId || order.id;
+            badgeEl.textContent = order.orderStatus || 'Confirmed';
+        } else {
+            orderIdEl.textContent = id;
+            badgeEl.textContent = 'In Transit';
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
