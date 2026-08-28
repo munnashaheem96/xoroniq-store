@@ -152,13 +152,13 @@
                 return;
             }
             container.innerHTML = orders.slice(0, 5).map(o => `
-            <a href="/admin/orders.html" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #334155;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+            <a href="/admin/orders.html" style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #E2E8F0;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
                 <div>
-                    <div style="font-size:13px;font-weight:700;color:#F8FAFC;">Order #${o.orderId || o.id}</div>
-                    <div style="font-size:12px;color:#94A3B8;">${o.customer?.name || o.shippingAddress?.name || 'Customer'} • ${o.shippingAddress?.city || 'India'}</div>
+                    <div style="font-size:13px;font-weight:700;color:#0F172A;">Order #${o.orderId || o.id}</div>
+                    <div style="font-size:12px;color:#64748B;">${o.customer?.name || o.shippingAddress?.name || 'Customer'} • ${o.shippingAddress?.city || 'India'}</div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:14px;font-weight:800;color:#F8FAFC;">${formatPrice(o.total)}</div>
+                    <div style="font-size:14px;font-weight:800;color:#0F172A;">${formatPrice(o.total)}</div>
                     <span class="badge ${o.orderStatus === 'Delivered' ? 'badge-success' : 'badge-primary'}" style="font-size:10px;">${o.orderStatus || 'Confirmed'}</span>
                 </div>
             </a>`).join('');
@@ -179,16 +179,16 @@
             <tr>
                 <td><div style="display:flex;align-items:center;gap:12px;">
                     <img class="table-product-img" src="${p.primaryImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" alt="${p.name}">
-                    <div><div style="font-weight:700;color:#F8FAFC;">${p.name}</div><div style="font-size:12px;color:#94A3B8;">${p.sku || '—'}</div></div>
+                    <div><div style="font-weight:700;color:#0F172A;">${p.name}</div><div style="font-size:12px;color:#64748B;">${p.sku || '—'}</div></div>
                 </div></td>
-                <td>${p.categoryName || '—'}</td>
-                <td><strong style="color:#F8FAFC;">${formatPrice(p.sellingPrice)}</strong></td>
-                <td><span style="font-weight:700;color:${(p.stock || 0) > 5 ? '#10B981' : '#F59E0B'}">${p.stock ?? 20}</span></td>
+                <td style="color:#475569;">${p.categoryName || '—'}</td>
+                <td><strong style="color:#0F172A;">${formatPrice(p.sellingPrice)}</strong></td>
+                <td><span style="font-weight:700;color:${(p.stock || 0) > 5 ? '#059669' : '#D97706'}">${p.stock ?? 20}</span></td>
                 <td><span class="badge ${p.isActive !== false ? 'badge-success' : 'badge-error'}">${p.isActive !== false ? 'Active' : 'Draft'}</span></td>
                 <td>
                     <div style="display:flex;gap:8px;">
-                        <a href="/admin/product-form.html?id=${p.id}" class="btn btn-dark btn-sm" style="padding:4px 10px;font-size:12px;">Edit</a>
-                        <a href="/product.html?id=${p.id}" target="_blank" class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:12px;">↗</a>
+                        <a href="/admin/product-form.html?id=${p.id}" class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:12px;color:#475569;border-color:#CBD5E1;">Edit</a>
+                        <a href="/product.html?id=${p.id}" target="_blank" class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:12px;color:#64748B;">↗</a>
                     </div>
                 </td>
             </tr>`).join('');

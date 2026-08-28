@@ -7,14 +7,14 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/admin.css">
     <style>
-        /* Order Details Modal & Slide-over Drawer */
+        /* Order Details Modal & Slide-over Drawer (Light Theme) */
         .order-modal-backdrop {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px);
             z-index: 1100;
             display: none;
@@ -26,50 +26,51 @@
             display: flex;
         }
         .order-modal-container {
-            background: #1E293B;
-            border: 1px solid #334155;
+            background: #FFFFFF;
+            border: 1px solid var(--admin-border);
             border-radius: var(--radius-2xl);
             width: 100%;
-            max-width: 900px;
+            max-width: 920px;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
             overflow: hidden;
             animation: modalSlideUp 0.25s ease-out;
         }
         @keyframes modalSlideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .order-modal-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid #334155;
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--admin-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #0F172A;
+            background: #FFFFFF;
         }
         .order-modal-body {
-            padding: 24px;
+            padding: 28px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 24px;
+            background: #FFFFFF;
         }
         .order-detail-card {
-            background: #0F172A;
-            border: 1px solid #334155;
+            background: #F8FAFC;
+            border: 1px solid var(--admin-border);
             border-radius: var(--radius-xl);
-            padding: 20px;
+            padding: 22px;
         }
         .order-detail-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #94A3B8;
-            margin-bottom: 14px;
+            letter-spacing: 0.06em;
+            color: #475569;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -78,19 +79,19 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 9px 0;
+            border-bottom: 1px solid #E2E8F0;
             font-size: 13px;
         }
         .detail-row:last-child {
             border-bottom: none;
         }
         .detail-label {
-            color: #94A3B8;
+            color: #64748B;
             font-weight: 600;
         }
         .detail-value {
-            color: #F8FAFC;
+            color: #0F172A;
             font-weight: 700;
             text-align: right;
         }
@@ -99,7 +100,7 @@
             align-items: center;
             gap: 14px;
             padding: 12px 0;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #E2E8F0;
         }
         .order-item-row:last-child {
             border-bottom: none;
@@ -109,13 +110,13 @@
             height: 52px;
             border-radius: var(--radius-md);
             object-fit: cover;
-            border: 1px solid #334155;
-            background: #000;
+            border: 1px solid var(--admin-border);
+            background: #FFFFFF;
         }
         .order-modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid #334155;
-            background: #0F172A;
+            padding: 18px 28px;
+            border-top: 1px solid var(--admin-border);
+            background: #FFFFFF;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -125,7 +126,7 @@
             transition: background var(--transition-fast);
         }
         .clickable-row:hover {
-            background: rgba(255, 255, 255, 0.03) !important;
+            background: #F8FAFC !important;
         }
     </style>
 </head>
@@ -141,7 +142,7 @@
             <span class="admin-header-title">Orders Management &amp; Fulfillment</span>
         </div>
         <div class="admin-header-actions">
-            <button class="btn btn-ghost btn-sm" id="refresh-orders-btn" style="color:#94A3B8;">🔄 Refresh</button>
+            <button class="btn btn-ghost btn-sm" id="refresh-orders-btn" style="color:#64748B;">🔄 Refresh</button>
             <div class="admin-header-avatar" title="Admin">A</div>
         </div>
     </header>
@@ -161,7 +162,7 @@
 
             <div class="admin-table-header">
                 <input type="text" class="admin-search-input" id="order-search" placeholder="Search by Order ID, Customer Name, Phone, City, Payment ID...">
-                <span id="order-count" style="font-size:13px;color:#94A3B8">0 Orders</span>
+                <span id="order-count" style="font-size:13px;color:#64748B">0 Orders</span>
             </div>
 
             <div class="admin-table-wrap">
@@ -201,12 +202,12 @@
         <div class="order-modal-header">
             <div>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <h2 style="font-family:var(--font-heading);font-size:1.125rem;font-weight:800;color:#FFFFFF;margin:0;" id="modal-order-id">ORD-XOR-10001</h2>
+                    <h2 style="font-family:var(--font-heading);font-size:1.25rem;font-weight:800;color:#0F172A;margin:0;" id="modal-order-id">ORD-XOR-10001</h2>
                     <span id="modal-status-badge" class="badge badge-success">Confirmed</span>
                 </div>
-                <div style="font-size:12px;color:#94A3B8;margin-top:2px;" id="modal-order-date">Placed on Aug 28, 2026 at 2:30 PM</div>
+                <div style="font-size:12px;color:#64748B;margin-top:2px;" id="modal-order-date">Placed on Aug 28, 2026 at 2:30 PM</div>
             </div>
-            <button class="btn btn-ghost btn-sm" id="close-modal-btn" style="color:#94A3B8;font-size:18px;line-height:1;">✕</button>
+            <button class="btn btn-ghost btn-sm" id="close-modal-btn" style="color:#64748B;font-size:18px;line-height:1;">✕</button>
         </div>
 
         <!-- Modal Body -->
@@ -267,28 +268,28 @@
                     </div>
                     <div class="detail-row" id="modal-razorpay-id-row">
                         <span class="detail-label">Razorpay Payment ID</span>
-                        <span class="detail-value" id="modal-pay-id" style="font-family:monospace;color:#818CF8;font-size:12px;">—</span>
+                        <span class="detail-value" id="modal-pay-id" style="font-family:monospace;color:var(--color-accent);font-size:12px;">—</span>
                     </div>
                     <div class="detail-row" id="modal-razorpay-order-row">
                         <span class="detail-label">Razorpay Order ID</span>
-                        <span class="detail-value" id="modal-pay-order-id" style="font-family:monospace;color:#94A3B8;font-size:12px;">—</span>
+                        <span class="detail-value" id="modal-pay-order-id" style="font-family:monospace;color:#64748B;font-size:12px;">—</span>
                     </div>
                     
-                    <div style="border-top:1px solid #334155;margin-top:10px;padding-top:10px;">
+                    <div style="border-top:1px solid #E2E8F0;margin-top:10px;padding-top:10px;">
                         <div class="detail-row">
                             <span class="detail-label">Subtotal</span>
                             <span class="detail-value" id="modal-subtotal">₹0</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Coupon Discount</span>
-                            <span class="detail-value" id="modal-discount" style="color:#10B981;">-₹0</span>
+                            <span class="detail-value" id="modal-discount" style="color:#059669;">-₹0</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Shipping Charges</span>
                             <span class="detail-value" id="modal-shipping">FREE</span>
                         </div>
                         <div class="detail-row" style="font-size:15px;padding-top:8px;">
-                            <span class="detail-label" style="color:#FFFFFF;font-weight:800;">Grand Total</span>
+                            <span class="detail-label" style="color:#0F172A;font-weight:800;">Grand Total</span>
                             <span class="detail-value" id="modal-grand-total" style="color:var(--color-accent);font-size:1.125rem;font-weight:800;">₹0</span>
                         </div>
                     </div>
@@ -311,7 +312,7 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:flex-end;">
                     <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" style="font-size:12px;">Fulfillment Status</label>
-                        <select class="form-select" id="modal-update-status" style="background:#1E293B;border-color:#334155;color:#FFF;">
+                        <select class="form-select" id="modal-update-status" style="background:#FFFFFF;border-color:#CBD5E1;color:#0F172A;">
                             <option value="Pending">Pending</option>
                             <option value="Confirmed">Confirmed</option>
                             <option value="Processing">Processing</option>
@@ -325,7 +326,7 @@
 
                     <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" style="font-size:12px;">Courier Partner</label>
-                        <select class="form-select" id="modal-courier-name" style="background:#1E293B;border-color:#334155;color:#FFF;">
+                        <select class="form-select" id="modal-courier-name" style="background:#FFFFFF;border-color:#CBD5E1;color:#0F172A;">
                             <option value="Delhivery">Delhivery Express</option>
                             <option value="BlueDart">Blue Dart Express</option>
                             <option value="Bluedart">Bluedart Express</option>
@@ -337,7 +338,7 @@
 
                     <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" style="font-size:12px;">AWB / Tracking Number</label>
-                        <input type="text" class="form-input" id="modal-tracking-number" placeholder="e.g. DLHV987654321" style="background:#1E293B;border-color:#334155;color:#FFF;">
+                        <input type="text" class="form-input" id="modal-tracking-number" placeholder="e.g. DLHV987654321" style="background:#FFFFFF;border-color:#CBD5E1;color:#0F172A;">
                     </div>
 
                     <button class="btn btn-primary btn-sm" id="modal-save-fulfillment-btn" style="height:38px;white-space:nowrap;">
@@ -350,7 +351,7 @@
 
         <!-- Modal Footer -->
         <div class="order-modal-footer">
-            <a id="modal-view-public-invoice" href="#" target="_blank" class="btn btn-outline btn-sm" style="color:#94A3B8;border-color:#334155;">
+            <a id="modal-view-public-invoice" href="#" target="_blank" class="btn btn-outline btn-sm" style="color:#475569;border-color:#CBD5E1;">
                 🖨️ View / Print Customer Invoice ↗
             </a>
             <button class="btn btn-secondary btn-sm" id="modal-close-bottom-btn">Close</button>
@@ -358,6 +359,7 @@
 
     </div>
 </div>
+
 
 <script type="module">
     import { initAdmin, getAdminSidebarHTML, showToast, formatPrice, formatDate } from '/js/admin.js';
