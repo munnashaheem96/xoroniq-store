@@ -8,7 +8,7 @@ export const APP_CONFIG = {
     version: "2.1.0",
 
     // Razorpay Configuration (can be overridden from Store Settings in Admin)
-    razorpayKeyId: "rzp_test_1DP5mmOlF5G5ag", // Demo test key / Live key
+    razorpayKeyId: "rzp_test_TV8HVNZoSzyqXL", // Demo test key / Live key
 
     // Pagination
     productsPerPage: 16,
