@@ -1,4 +1,4 @@
-// js/checkout.js — Checkout Page Logic with Razorpay & COD Integration for XORONIQ
+// js/checkout.js — Checkout Page Logic with Razorpay Standard Web Checkout Integration for XORONIQ
 
 import { APP_CONFIG, STATES, PAYMENT_METHODS } from "./config.js";
 import { getCart, saveCart, formatPrice, showToast } from "./app.js";
@@ -111,7 +111,7 @@ function renderPaymentMethods() {
                 </div>
                 <div style="font-size:12px;color:var(--color-text-secondary);">${m.desc || ''}</div>
             </div>
-            ${m.id === 'RAZORPAY' ? '<span class="badge badge-primary" style="font-size:10px;background:var(--color-accent);color:#FFF;">Instant &amp; Fast</span>' : '<span class="badge badge-success" style="font-size:10px;">Zero Risk</span>'}
+            ${m.id === 'RAZORPAY' ? '<span class="badge badge-primary" style="font-size:10px;background:var(--color-accent);color:#FFF;">Instant &amp; Secure</span>' : '<span class="badge badge-success" style="font-size:10px;">Zero Risk</span>'}
         </label>
     `).join('');
 
@@ -157,7 +157,8 @@ function bindCheckoutForm() {
             return;
         }
 
-        if (!/^\d{10}$/.test(phone.replace(/[^0-9]/g, ''))) {
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        if (!/^\d{10}$/.test(cleanPhone)) {
             showToast("Please enter a valid 10-digit mobile number", "warning");
             if (submitBtn) { submitBtn.disabled = false; renderOrderSummary(); }
             return;
@@ -186,6 +187,7 @@ function bindCheckoutForm() {
 
         const shippingFee = subtotal >= threshold ? 0 : defaultShipping;
         const finalTotal = Math.max(0, subtotal - discount + shippingFee);
+        const amountInPaise = Math.max(100, Math.round(finalTotal * 100)); // Minimum 100 paise (₹1.00)
 
         const orderPayload = {
             items: cart,
@@ -199,12 +201,12 @@ function bindCheckoutForm() {
             orderStatus: 'Confirmed',
             customer: {
                 name,
-                phone,
-                email: email || `${phone}@customer.xoroniq.com`,
+                phone: cleanPhone,
+                email: email || `${cleanPhone}@customer.xoroniq.com`,
             },
             shippingAddress: {
                 name,
-                phone,
+                phone: cleanPhone,
                 addressLine: address,
                 city,
                 state,
@@ -214,63 +216,110 @@ function bindCheckoutForm() {
         };
 
         // ─────────────────────────────────────────────
-        // RAZORPAY PAYMENT GATEWAY FLOW
+        // RAZORPAY STANDARD WEB CHECKOUT FLOW
         // ─────────────────────────────────────────────
-        if (paymentMethod === 'RAZORPAY' && typeof window.Razorpay !== 'undefined') {
-            const rzpKey = storeSettings?.razorpayKeyId || APP_CONFIG.razorpayKeyId;
-
-            const options = {
-                key: rzpKey,
-                amount: Math.round(finalTotal * 100), // in paise (e.g. 149900)
-                currency: "INR",
-                name: storeSettings?.storeName || APP_CONFIG.name,
-                description: `Order Payment (${cart.length} item${cart.length === 1 ? '' : 's'})`,
-                image: "/assets/logo/xoroniq-logo.svg",
-                prefill: {
-                    name: name,
-                    email: email || `${phone}@customer.xoroniq.com`,
-                    contact: phone
-                },
-                theme: {
-                    color: "#4F46E5"
-                },
-                handler: async function (response) {
-                    // Payment succeeded on Razorpay
-                    orderPayload.paymentStatus = 'Paid';
-                    orderPayload.razorpayPaymentId = response.razorpay_payment_id;
-                    orderPayload.razorpayOrderId = response.razorpay_order_id || null;
-                    orderPayload.razorpaySignature = response.razorpay_signature || null;
-
-                    try {
-                        const placedOrder = await createOrder(orderPayload);
-                        saveCart([]);
-                        sessionStorage.removeItem('xoroniq_applied_coupon');
-                        showToast("Payment successful! Order confirmed.", "success");
-                        setTimeout(() => {
-                            window.location.href = `/order-details.html?id=${placedOrder.orderId || placedOrder.id}`;
-                        }, 800);
-                    } catch (err) {
-                        showToast("Order saved! Redirecting...", "success");
-                        setTimeout(() => {
-                            window.location.href = `/order-details.html?id=${orderPayload.orderId || 'ORD-XOR-10001'}`;
-                        }, 800);
-                    }
-                },
-                modal: {
-                    ondismiss: function () {
-                        showToast("Payment modal closed. You can retry anytime.", "info");
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            renderOrderSummary();
-                        }
-                    }
-                }
-            };
+        if (paymentMethod === 'RAZORPAY') {
+            if (typeof window.Razorpay === 'undefined') {
+                showToast("Razorpay SDK failed to load. Please check your internet connection.", "error");
+                if (submitBtn) { submitBtn.disabled = false; renderOrderSummary(); }
+                return;
+            }
 
             try {
+                // STEP 1: Call Backend to Create Razorpay Order
+                const createRes = await fetch("/api/create-order", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        amount: amountInPaise,
+                        currency: "INR",
+                        receipt: `rcpt_${Date.now()}`,
+                        notes: {
+                            customer_name: name,
+                            customer_phone: cleanPhone,
+                            item_count: cart.length
+                        }
+                    })
+                });
+
+                const orderData = await createRes.json();
+
+                if (!createRes.ok || !orderData.success || !orderData.order_id) {
+                    throw new Error(orderData.error || "Could not initialize Razorpay order");
+                }
+
+                // STEP 2: Open Razorpay Standard Checkout Modal
+                const options = {
+                    key: orderData.key_id || storeSettings?.razorpayKeyId || APP_CONFIG.razorpayKeyId,
+                    amount: orderData.amount,
+                    currency: orderData.currency || "INR",
+                    name: storeSettings?.storeName || APP_CONFIG.name,
+                    description: `Order Payment (${cart.length} items)`,
+                    image: "/assets/logo/xoroniq-logo.svg",
+                    order_id: orderData.order_id,
+                    prefill: {
+                        name: name,
+                        email: email || `${cleanPhone}@customer.xoroniq.com`,
+                        contact: cleanPhone
+                    },
+                    theme: {
+                        color: "#4F46E5"
+                    },
+                    handler: async function (response) {
+                        // STEP 3: Verify Payment Signature with Backend
+                        try {
+                            const verifyRes = await fetch("/api/verify-payment", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            });
+
+                            const verifyData = await verifyRes.json();
+
+                            if (!verifyRes.ok || !verifyData.success) {
+                                showToast(verifyData.error || "Payment signature verification failed", "error");
+                                if (submitBtn) { submitBtn.disabled = false; renderOrderSummary(); }
+                                return;
+                            }
+
+                            // Payment signature verified successfully!
+                            orderPayload.paymentStatus = 'Paid';
+                            orderPayload.paymentMethod = 'Razorpay';
+                            orderPayload.razorpayPaymentId = response.razorpay_payment_id;
+                            orderPayload.razorpayOrderId = response.razorpay_order_id;
+                            orderPayload.razorpaySignature = response.razorpay_signature;
+
+                            const placedOrder = await createOrder(orderPayload);
+                            saveCart([]);
+                            sessionStorage.removeItem('xoroniq_applied_coupon');
+                            showToast("Payment verified! Order placed successfully.", "success");
+                            setTimeout(() => {
+                                window.location.href = `/order-details.html?id=${placedOrder.orderId || placedOrder.id}`;
+                            }, 800);
+                        } catch (vErr) {
+                            console.error("[checkout.js] Verification error:", vErr);
+                            showToast("Error verifying payment with server.", "error");
+                            if (submitBtn) { submitBtn.disabled = false; renderOrderSummary(); }
+                        }
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            showToast("Payment modal dismissed. You can retry anytime.", "info");
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                renderOrderSummary();
+                            }
+                        }
+                    }
+                };
+
                 const rzp = new window.Razorpay(options);
                 rzp.on('payment.failed', function (response) {
-                    showToast(`Payment declined: ${response.error?.description || 'Transaction failed'}`, "error");
+                    showToast(`Payment failed: ${response.error?.description || 'Transaction declined'}`, "error");
                     if (submitBtn) {
                         submitBtn.disabled = false;
                         renderOrderSummary();
@@ -278,8 +327,12 @@ function bindCheckoutForm() {
                 });
                 rzp.open();
             } catch (err) {
-                console.warn("[checkout.js] Razorpay modal open error, falling back to direct order:", err);
-                await placeOrderDirectly(orderPayload, submitBtn);
+                console.error("[checkout.js] Razorpay initialization failed:", err);
+                showToast(`Payment initialization failed: ${err.message}`, "error");
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    renderOrderSummary();
+                }
             }
             return;
         }
@@ -287,29 +340,24 @@ function bindCheckoutForm() {
         // ─────────────────────────────────────────────
         // COD / DIRECT ORDER FLOW
         // ─────────────────────────────────────────────
-        await placeOrderDirectly(orderPayload, submitBtn);
-    });
-}
+        try {
+            const placedOrder = await createOrder(orderPayload);
+            saveCart([]);
+            sessionStorage.removeItem('xoroniq_applied_coupon');
 
-async function placeOrderDirectly(orderPayload, submitBtn) {
-    try {
-        const placedOrder = await createOrder(orderPayload);
-        // Clear cart
-        saveCart([]);
-        sessionStorage.removeItem('xoroniq_applied_coupon');
-
-        showToast("Order placed successfully!", "success");
-        setTimeout(() => {
-            window.location.href = `/order-details.html?id=${placedOrder.orderId || placedOrder.id}`;
-        }, 800);
-    } catch (err) {
-        console.error("[checkout.js] Order placement failed:", err);
-        showToast("Failed to place order. Please try again.", "error");
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            renderOrderSummary();
+            showToast("Order placed successfully!", "success");
+            setTimeout(() => {
+                window.location.href = `/order-details.html?id=${placedOrder.orderId || placedOrder.id}`;
+            }, 800);
+        } catch (err) {
+            console.error("[checkout.js] Order placement failed:", err);
+            showToast("Failed to place order. Please try again.", "error");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                renderOrderSummary();
+            }
         }
-    }
+    });
 }
 
 // Auto-run if on checkout page

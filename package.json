@@ -1,0 +1,29 @@
+{
+  "name": "xoro-store",
+  "version": "1.0.0",
+  "description": "A production-ready, minimalist, high-converting D2C dropshipping e-commerce platform and admin management panel built with **HTML5, CSS3, Vanilla ES6+ JavaScript, Firebase Firestore, and Firebase Authentication**.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munnashaheem96/xoroniq-store.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/munnashaheem96/xoroniq-store/issues"
+  },
+  "homepage": "https://github.com/munnashaheem96/xoroniq-store#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "razorpay": "^2.9.8"
+  }
+}
