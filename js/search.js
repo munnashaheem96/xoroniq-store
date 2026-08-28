@@ -99,8 +99,8 @@ function renderSuggestions(container, results, q) {
         container.innerHTML = `<div class="suggestion-item suggestion-empty">No results for "<strong>${escapeHtml(q)}</strong>"</div>`;
     } else {
         const items = results.slice(0, 5).map(p => `
-        <a class="suggestion-item" href="/product.html?id=${p.id}">
-            <img src="${p.primaryImage || APP_CONFIG.placeholderImage}" alt="${p.name}" class="suggestion-img" loading="lazy">
+        <a class="suggestion-item" href="/products/${p.slug || p.id}">
+            <img src="${p.primaryImage || APP_CONFIG.placeholderImage}" alt="${p.name}" class="suggestion-img" loading="lazy" width="40" height="40">
             <div class="suggestion-info">
                 <span class="suggestion-name">${highlightQuery(p.name, q)}</span>
                 <span class="suggestion-price">₹${p.sellingPrice?.toLocaleString("en-IN")}</span>

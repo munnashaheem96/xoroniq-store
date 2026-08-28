@@ -104,13 +104,14 @@ export function renderProductCard(product) {
     const imgSrc = product.primaryImage || APP_CONFIG.placeholderImage;
     const wishlist = getLocalWishlist();
     const isWishlisted = wishlist.includes(product.id);
+    const productUrl = `/products/${product.slug || product.id}`;
 
     return `
     <article class="product-card" data-id="${product.id}">
         <div class="product-card-img-wrap">
             ${discount > 0 ? `<span class="product-badge">${discount}% OFF</span>` : ""}
-            <a href="/product.html?id=${product.id}" aria-label="${product.name}">
-                <img src="${imgSrc}" alt="${product.name}" class="product-card-img" loading="lazy"
+            <a href="${productUrl}" aria-label="${product.name}">
+                <img src="${imgSrc}" alt="${product.name} - Buy online at XORONIQ" class="product-card-img" loading="lazy" decoding="async" width="300" height="300"
                      onerror="this.src='${APP_CONFIG.placeholderImage}'">
             </a>
             <button class="product-wishlist-btn ${isWishlisted ? 'active' : ''}" data-id="${product.id}" title="Wishlist" aria-label="Toggle wishlist">
@@ -119,7 +120,7 @@ export function renderProductCard(product) {
         </div>
         <div class="product-card-info">
             <p class="product-card-category">${product.categoryName || "ESSENTIALS"}</p>
-            <a href="/product.html?id=${product.id}" class="product-card-link">
+            <a href="${productUrl}" class="product-card-link">
                 <h3 class="product-card-name">${product.name}</h3>
             </a>
             <div class="product-card-rating">
@@ -288,8 +289,8 @@ export function initApp() {
                     suggestionsBox.innerHTML = `<div style="padding:16px;text-align:center;color:#94A3B8;font-size:13px;">No products found for "${query}"</div>`;
                 } else {
                     suggestionsBox.innerHTML = results.map(p => `
-                        <a href="/product.html?id=${p.id}" class="search-suggestion-item">
-                            <img src="${p.primaryImage || APP_CONFIG.placeholderImage}" class="search-suggestion-thumb" alt="${p.name}">
+                        <a href="/products/${p.slug || p.id}" class="search-suggestion-item">
+                            <img src="${p.primaryImage || APP_CONFIG.placeholderImage}" class="search-suggestion-thumb" alt="${p.name}" width="40" height="40" loading="lazy">
                             <div class="search-suggestion-info">
                                 <div class="search-suggestion-name">${p.name}</div>
                                 <div class="search-suggestion-price">${formatPrice(p.sellingPrice)}</div>

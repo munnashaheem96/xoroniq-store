@@ -1,0 +1,93 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**",
+      "server.js",
+      "package.json",
+      "package-lock.json",
+      ".env*",
+      "scripts/**"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "/products/**",
+        "destination": "/product.html"
+      },
+      {
+        "source": "/product/**",
+        "destination": "/product.html"
+      },
+      {
+        "source": "/category/**",
+        "destination": "/shop.html"
+      },
+      {
+        "source": "/shipping-policy",
+        "destination": "/policies/shipping.html"
+      },
+      {
+        "source": "/return-policy",
+        "destination": "/policies/returns.html"
+      },
+      {
+        "source": "/privacy-policy",
+        "destination": "/policies/privacy.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/policies/terms.html"
+      },
+      {
+        "source": "/cancellation-policy",
+        "destination": "/policies/cancellation.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|webp|avif|svg|ico)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(css|js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=604800"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "SAMEORIGIN"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          }
+        ]
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

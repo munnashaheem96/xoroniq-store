@@ -1,8 +1,9 @@
-// js/products.js — Shop Page Filtering, Sorting, and Listing for XORONIQ
+// js/products.js — Shop Page Filtering, Sorting, Listing & Dynamic Category SEO for XORONIQ
 
 import { getProducts, getCategories, searchProducts } from './db.js';
 import { renderProductCard, showSkeletons, showToast, getUrlParam, addToCart, updateHeaderBadges } from './app.js';
 import { APP_CONFIG, SORT_OPTIONS } from './config.js';
+import { updateMetaTags, injectJsonLd, generateCollectionSchema, generateBreadcrumbsSchema, SITE_SEO } from './seo.js';
 
 // ── State ──
 let activeFilters = {
@@ -14,6 +15,7 @@ let activeFilters = {
     inStock: false
 };
 let currentSort = 'featured';
+let categoriesList = [];
 
 // ── DOM References ──
 const grid = document.getElementById('products-grid');
@@ -22,14 +24,28 @@ const sortSelect = document.getElementById('sort-select');
 const clearFiltersBtn = document.getElementById('clear-filters');
 const activeFiltersWrap = document.getElementById('active-filters');
 
+/**
+ * Extract Category identifier from Pathname (/category/:slug) or Query string (?category=...)
+ */
+function getCategoryFromUrl() {
+    const queryCategory = getUrlParam('category');
+    if (queryCategory) return queryCategory;
+
+    const pathname = window.location.pathname;
+    const match = pathname.match(/\/category\/([^/?#]+)/i);
+    if (match && match[1]) {
+        return decodeURIComponent(match[1]).replace(/\.html$/i, '');
+    }
+    return '';
+}
+
 export async function initShop() {
     updateHeaderBadges();
 
-    // Read URL Params
-    const urlCategory = getUrlParam('category') || '';
+    // Read URL Params & Path
+    const urlCategory = getCategoryFromUrl();
     const urlSort = getUrlParam('sort') || 'featured';
-    const urlQ = getUrlParam('q') || '';
-    const urlFilter = getUrlParam('filter') || '';
+    const urlQ = getUrlParam('q') || getUrlParam('search') || '';
 
     if (urlSort) {
         currentSort = urlSort === 'trending' ? 'popular' : urlSort === 'discount' ? 'discount' : urlSort;
@@ -49,6 +65,14 @@ export async function initShop() {
         if (shopTitle) shopTitle.textContent = `Search results for "${urlQ}"`;
         const breadcrumb = document.getElementById('breadcrumb-current');
         if (breadcrumb) breadcrumb.textContent = `Search: ${urlQ}`;
+        
+        updateMetaTags({
+            title: `Search: "${urlQ}" — XORONIQ Store`,
+            description: `Browse matching products for "${urlQ}" at XORONIQ. Best prices in India, Fast Shipping & COD available.`,
+            canonicalUrl: `/shop.html?q=${encodeURIComponent(urlQ)}`,
+            noindex: true
+        });
+
         await handleSearch(urlQ);
     } else {
         await loadProducts();
@@ -62,12 +86,12 @@ async function loadCategories(activeCategory = '') {
     if (!container) return;
 
     try {
-        const categories = await getCategories(true);
+        categoriesList = await getCategories(true);
         container.innerHTML = `
             <label class="filter-option">
                 <input type="radio" name="category" value="" ${!activeCategory ? 'checked' : ''}> All Collections
             </label>
-            ${categories.map(c => `
+            ${categoriesList.map(c => `
                 <label class="filter-option">
                     <input type="radio" name="category" value="${c.id}" ${activeCategory === c.id || activeCategory === c.slug ? 'checked' : ''}>
                     ${c.name}
@@ -141,6 +165,52 @@ export async function loadProducts() {
 
     renderResults(filtered);
     renderActiveFilterBadges();
+    applyCategorySEO(activeFilters.category, filtered);
+}
+
+function applyCategorySEO(categoryId, productList) {
+    const categoryObj = categoriesList.find(c => c.id === categoryId || c.slug === categoryId);
+    const titleEl = document.getElementById('shop-page-title');
+    const breadcrumbEl = document.getElementById('breadcrumb-current');
+
+    let pageTitle = "Shop All Products — XORONIQ Catalog";
+    let pageDesc = "Explore our complete catalog of trending smart electronics, aesthetic home organizers, and lifestyle accessories. Free shipping across India on orders above ₹999.";
+    let canonical = "/shop.html";
+
+    if (categoryObj) {
+        pageTitle = `${categoryObj.name} — Buy Online at Best Price | XORONIQ`;
+        pageDesc = categoryObj.description || `Discover trending ${categoryObj.name} products at XORONIQ. Premium quality, best online prices in India, fast delivery & Cash on Delivery.`;
+        canonical = `/category/${categoryObj.slug || categoryObj.id}`;
+
+        if (titleEl) titleEl.textContent = categoryObj.name;
+        if (breadcrumbEl) breadcrumbEl.textContent = categoryObj.name;
+    } else if (titleEl) {
+        titleEl.textContent = "All Products";
+        if (breadcrumbEl) breadcrumbEl.textContent = "All Products";
+    }
+
+    // Update Meta & OpenGraph
+    updateMetaTags({
+        title: pageTitle,
+        description: pageDesc,
+        canonicalUrl: canonical,
+        keywords: `${categoryObj ? categoryObj.name + ', ' : ''}trending products online, smart gadgets, kitchen organizers, lifestyle products india`,
+        ogType: "website"
+    });
+
+    // CollectionPage Schema
+    const collectionSchema = generateCollectionSchema(pageTitle, pageDesc, productList, canonical);
+    injectJsonLd(collectionSchema, "schema-collection");
+
+    // Breadcrumb Schema
+    const breadcrumbItems = [
+        { name: "Home", url: "/" },
+        { name: "Shop", url: "/shop.html" }
+    ];
+    if (categoryObj) {
+        breadcrumbItems.push({ name: categoryObj.name, url: `/category/${categoryObj.slug || categoryObj.id}` });
+    }
+    injectJsonLd(generateBreadcrumbsSchema(breadcrumbItems), "schema-breadcrumbs");
 }
 
 function renderResults(products) {
@@ -171,7 +241,8 @@ function renderActiveFilterBadges() {
     const badges = [];
 
     if (activeFilters.category) {
-        badges.push({ key: 'category', label: `Category: ${activeFilters.category}` });
+        const cat = categoriesList.find(c => c.id === activeFilters.category || c.slug === activeFilters.category);
+        badges.push({ key: 'category', label: `Category: ${cat?.name || activeFilters.category}` });
     }
     if (activeFilters.minPrice > 0 || activeFilters.maxPrice < Infinity) {
         badges.push({ key: 'price', label: `Price: ₹${activeFilters.minPrice} - ₹${activeFilters.maxPrice === Infinity ? '+' : activeFilters.maxPrice}` });
@@ -199,7 +270,11 @@ function renderActiveFilterBadges() {
     activeFiltersWrap.querySelectorAll('.badge').forEach(el => {
         el.addEventListener('click', () => {
             const key = el.dataset.key;
-            if (key === 'category') activeFilters.category = '';
+            if (key === 'category') {
+                activeFilters.category = '';
+                const allCatRadio = document.querySelector('input[name="category"][value=""]');
+                if (allCatRadio) allCatRadio.checked = true;
+            }
             if (key === 'price') { activeFilters.minPrice = 0; activeFilters.maxPrice = Infinity; }
             if (key === 'discount') activeFilters.minDiscount = 0;
             if (key === 'rating') activeFilters.minRating = 0;

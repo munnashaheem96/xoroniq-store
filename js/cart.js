@@ -30,11 +30,11 @@ export async function renderCartView() {
     if (itemsContainer) {
         itemsContainer.innerHTML = cart.map(item => `
             <div class="cart-item" data-key="${item.cartKey || item.id}" style="display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--color-border);align-items:center;">
-                <a href="/product.html?id=${item.id}" style="flex-shrink:0;">
-                    <img src="${item.image || APP_CONFIG.placeholderImage}" alt="${item.name}" style="width:84px;height:84px;border-radius:var(--radius-md);object-fit:cover;border:1px solid var(--color-border);" loading="lazy">
+                <a href="/products/${item.slug || item.id}" style="flex-shrink:0;">
+                    <img src="${item.image || APP_CONFIG.placeholderImage}" alt="${item.name}" style="width:84px;height:84px;border-radius:var(--radius-md);object-fit:cover;border:1px solid var(--color-border);" loading="lazy" width="84" height="84">
                 </a>
                 <div style="flex:1;min-width:0;">
-                    <a href="/product.html?id=${item.id}">
+                    <a href="/products/${item.slug || item.id}">
                         <h4 style="font-family:var(--font-heading);font-size:15px;font-weight:700;margin-bottom:4px;color:var(--color-text);">${item.name}</h4>
                     </a>
                     ${item.variant ? `<div style="font-size:12px;color:var(--color-accent);font-weight:600;margin-bottom:6px;">${item.variant}</div>` : ''}

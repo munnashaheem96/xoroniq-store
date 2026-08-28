@@ -196,6 +196,18 @@ export async function getAllProductsAdmin({ pageSize = 100, lastDoc = null } = {
     return await getProducts({ pageSize, activeOnly: false });
 }
 
+export function slugify(text) {
+    if (!text) return "";
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')        // Replace spaces with -
+        .replace(/&/g, '-and-')      // Replace & with 'and'
+        .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
+        .replace(/\-\-+/g, '-');     // Replace multiple - with single -
+}
+
 export async function getProductById(id) {
     if (!id) return null;
     let product = null;
@@ -205,19 +217,36 @@ export async function getProductById(id) {
             product = { id: snap.id, ...snap.data() };
         }
     } catch (err) {
-        console.warn("[db.js] Firestore getProductById error:", err.message);
+        console.warn("[db.js] Firestore getDoc error (will try query/fallback):", err.message);
     }
+
+    if (!product) {
+        try {
+            const q = query(collection(db, "products"), where("slug", "==", id), limit(1));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                const first = snap.docs[0];
+                product = { id: first.id, ...first.data() };
+            }
+        } catch (qErr) {
+            // query failed
+        }
+    }
+
     if (!product) {
         const local = getLocalStore(LS_KEYS.LOCAL_PRODUCTS, []);
-        const foundLocal = local.find(p => p.id === id);
+        const foundLocal = local.find(p => p.id === id || p.slug === id || slugify(p.name) === id);
         if (foundLocal) product = foundLocal;
         else {
-            const foundDemo = DEMO_PRODUCTS.find(p => p.id === id || p.slug === id);
+            const foundDemo = DEMO_PRODUCTS.find(p => p.id === id || p.slug === id || slugify(p.name) === id);
             if (foundDemo) product = foundDemo;
         }
     }
 
     if (product) {
+        if (!product.slug && product.name) {
+            product.slug = slugify(product.name);
+        }
         const allReviews = getLocalStore(LS_KEYS.LOCAL_REVIEWS, []);
         const pReviews = allReviews.filter(r => r.productId === product.id && r.isApproved !== false);
         if (pReviews.length > 0) {
@@ -235,13 +264,14 @@ export async function getProductById(id) {
 
 export async function getProductBySlug(slug) {
     if (!slug) return null;
-    const { products } = await getProducts({ pageSize: 200, activeOnly: false });
-    return products.find(p => p.slug === slug || p.id === slug) || null;
+    return await getProductById(slug);
 }
 
 export async function createProduct(data) {
+    const slug = data.slug || slugify(data.name) || `product-${Date.now()}`;
     const newProduct = {
         ...data,
+        slug,
         rating: 0,
         reviewCount: 0,
         isActive: data.isActive !== undefined ? data.isActive : true,

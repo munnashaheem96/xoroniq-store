@@ -1,25 +1,58 @@
-// js/product-details.js — Product Detail Page (PDP) Interactive Controller for XORONIQ
+// js/product-details.js — Product Detail Page (PDP) Interactive Controller & Dynamic SEO for XORONIQ
 
 import { getProductById, getProducts, getReviews, createReview } from './db.js';
 import { renderProductCard, showToast, formatPrice, calcDiscount, renderStars, getUrlParam, addToCart, updateHeaderBadges } from './app.js';
 import { APP_CONFIG } from './config.js';
+import { updateMetaTags, injectJsonLd, generateProductSchema, generateBreadcrumbsSchema, SITE_SEO } from './seo.js';
+import { trackViewContent } from './meta.js';
 
 let currentProduct = null;
 let selectedVariant = null;
 let currentQty = 1;
 
+/**
+ * Extract Product identifier from Pathname (/products/:slug or /product/:slug) or Query string (?id=... or ?slug=...)
+ */
+export function getProductIdentifierFromUrl() {
+    // 1. Query parameter check (?id=... or ?slug=...)
+    const queryParam = getUrlParam('id') || getUrlParam('slug');
+    if (queryParam) return queryParam;
+
+    // 2. Path routing check (/products/product-name or /product/product-name)
+    const pathname = window.location.pathname;
+    const match = pathname.match(/\/(?:products|product)\/([^/?#]+)/i);
+    if (match && match[1]) {
+        const decoded = decodeURIComponent(match[1]).replace(/\.html$/i, '');
+        if (decoded && decoded !== 'index' && decoded !== 'product') {
+            return decoded;
+        }
+    }
+
+    return null;
+}
+
 export async function initPDP() {
     updateHeaderBadges();
-    const id = getUrlParam('id');
-    if (!id) {
+    const identifier = getProductIdentifierFromUrl();
+    if (!identifier) {
         window.location.href = '/shop.html';
         return;
     }
 
-    currentProduct = await getProductById(id);
+    currentProduct = await getProductById(identifier);
     if (!currentProduct) {
         showProductNotFound();
         return;
+    }
+
+    // Apply Dynamic SEO & Structured Data
+    applyProductSEO(currentProduct);
+
+    // Track Meta Pixel / CAPI ViewContent
+    try {
+        trackViewContent(currentProduct);
+    } catch (e) {
+        // Meta pixel optional
     }
 
     renderProductHeader(currentProduct);
@@ -33,7 +66,57 @@ export async function initPDP() {
     loadRelatedProducts(currentProduct);
 }
 
+function applyProductSEO(p) {
+    const slug = p.slug || p.id;
+    const canonicalUrl = `${SITE_SEO.domain}/products/${slug}`;
+    const discount = calcDiscount(p.mrp, p.sellingPrice);
+    const saveText = discount > 0 ? ` (Save ${discount}%)` : '';
+    
+    // Rich Meta Title
+    const pageTitle = `${p.name} | Buy Online at Best Price in India — XORONIQ`;
+    
+    // Rich Meta Description
+    const pageDescription = `Buy ${p.name} online at ₹${p.sellingPrice}${saveText}. ${p.shortDescription || p.description || ''} Free shipping on eligible orders, COD available & genuine warranty from XORONIQ.`;
+    
+    // Specific Keywords
+    const keywords = `${p.name}, buy ${p.name} online, ${p.categoryName || 'smart gadgets'}, XORONIQ ${p.name}, trending lifestyle products india, ${p.tags ? p.tags.join(', ') : ''}`;
+
+    const mainImage = (p.images && p.images.length > 0) ? p.images[0] : (p.primaryImage || SITE_SEO.defaultImage);
+
+    // 1. Update Document Head Meta, Canonical & Open Graph / Twitter Cards
+    updateMetaTags({
+        title: pageTitle,
+        description: pageDescription,
+        canonicalUrl: canonicalUrl,
+        keywords: keywords,
+        ogType: "product",
+        ogImage: mainImage,
+        ogImageAlt: `${p.name} - Official XORONIQ Store Product Photo`,
+        price: p.sellingPrice,
+        currency: "INR",
+        availability: (p.stock === undefined || p.stock > 0) ? "in stock" : "out of stock"
+    });
+
+    // 2. Inject Schema.org Product Structured Data
+    const productSchema = generateProductSchema(p, canonicalUrl);
+    injectJsonLd(productSchema, "schema-product");
+
+    // 3. Inject Schema.org BreadcrumbList Structured Data
+    const breadcrumbItems = [
+        { name: "Home", url: "/" },
+        { name: p.categoryName || "Shop", url: `/category/${p.categoryId || 'electronics'}` },
+        { name: p.name, url: `/products/${slug}` }
+    ];
+    injectJsonLd(generateBreadcrumbsSchema(breadcrumbItems), "schema-breadcrumbs");
+}
+
 function showProductNotFound() {
+    updateMetaTags({
+        title: "Product Not Found — XORONIQ",
+        description: "The product you requested could not be found or has been moved.",
+        noindex: true
+    });
+
     const main = document.getElementById('pdp-main-content') || document.querySelector('main');
     if (main) {
         main.innerHTML = `
@@ -48,14 +131,13 @@ function showProductNotFound() {
 }
 
 function renderProductHeader(p) {
-    document.title = `${p.name} — XORONIQ`;
     const titleEl = document.getElementById('pdp-title');
     if (titleEl) titleEl.textContent = p.name;
 
     const catEl = document.getElementById('pdp-category');
     if (catEl) {
         catEl.textContent = p.categoryName || "Smart Essentials";
-        catEl.href = `/shop.html?category=${p.categoryId || ''}`;
+        catEl.href = `/category/${p.categoryId || ''}`;
     }
 
     const breadcrumbName = document.getElementById('pdp-breadcrumb-name');
@@ -72,7 +154,6 @@ function renderProductHeader(p) {
         if (reviewCountEl) reviewCountEl.textContent = 'No reviews yet • Be the first to review!';
     }
 
-
     const shortDescEl = document.getElementById('pdp-short-desc');
     if (shortDescEl) shortDescEl.textContent = p.shortDescription || p.description || '';
 }
@@ -84,13 +165,17 @@ function renderGallery(p) {
 
     if (mainImg) {
         mainImg.src = images[0];
-        mainImg.alt = p.name;
+        mainImg.alt = `${p.name} - Main Product View`;
+        mainImg.setAttribute('width', '600');
+        mainImg.setAttribute('height', '600');
+        mainImg.setAttribute('loading', 'eager');
+        mainImg.setAttribute('decoding', 'async');
     }
 
     if (thumbsContainer) {
         thumbsContainer.innerHTML = images.map((imgUrl, idx) => `
-            <div class="pdp-thumb ${idx === 0 ? 'active' : ''}" data-src="${imgUrl}">
-                <img src="${imgUrl}" alt="${p.name} - View ${idx + 1}" loading="lazy">
+            <div class="pdp-thumb ${idx === 0 ? 'active' : ''}" data-src="${imgUrl}" role="button" aria-label="View product image ${idx + 1}">
+                <img src="${imgUrl}" alt="${p.name} thumbnail ${idx + 1}" loading="lazy" decoding="async" width="80" height="80">
             </div>
         `).join('');
 
@@ -98,7 +183,10 @@ function renderGallery(p) {
             thumb.addEventListener('click', () => {
                 thumbsContainer.querySelectorAll('.pdp-thumb').forEach(t => t.classList.remove('active'));
                 thumb.classList.add('active');
-                if (mainImg) mainImg.src = thumb.dataset.src;
+                if (mainImg) {
+                    mainImg.src = thumb.dataset.src;
+                    mainImg.alt = `${p.name} - Detailed View`;
+                }
             });
         });
     }
@@ -153,7 +241,7 @@ function renderVariants(p) {
             <div class="variant-title">${p.variants[0].type || 'Options'}: <span id="selected-variant-label" style="color:var(--color-accent);font-weight:700;">${selectedVariant.name}</span></div>
             <div class="variant-options">
                 ${p.variants.map((v, i) => `
-                    <button class="variant-pill ${i === 0 ? 'active' : ''}" data-idx="${i}">
+                    <button class="variant-pill ${i === 0 ? 'active' : ''}" data-idx="${i}" aria-label="Select option ${v.name}">
                         ${v.name}
                     </button>
                 `).join('')}
@@ -328,6 +416,6 @@ async function loadRelatedProducts(p) {
 }
 
 // Auto-run if on PDP
-if (document.getElementById('pdp-main-img') || getUrlParam('id')) {
+if (document.getElementById('pdp-main-img') || getProductIdentifierFromUrl()) {
     initPDP();
 }

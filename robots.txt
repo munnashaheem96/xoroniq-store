@@ -1,0 +1,51 @@
+# robots.txt for XORONIQ (https://xoroniq.store)
+# Designed for maximum Google and search engine crawlability
+
+User-agent: *
+Allow: /
+Allow: /shop.html
+Allow: /products/
+Allow: /category/
+Allow: /about.html
+Allow: /contact.html
+Allow: /faq.html
+Allow: /policies/
+Allow: /css/
+Allow: /js/
+Allow: /assets/
+
+# Protect private customer portals, admin panel & checkout
+Disallow: /admin/
+Disallow: /checkout.html
+Disallow: /checkout
+Disallow: /account.html
+Disallow: /account
+Disallow: /login.html
+Disallow: /login
+Disallow: /register.html
+Disallow: /register
+Disallow: /order-details.html
+Disallow: /order-details
+Disallow: /api/
+
+# Googlebot & Bingbot Optimization
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /account
+Disallow: /api/
+
+User-agent: Googlebot-Image
+Allow: /assets/
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /account
+Disallow: /api/
+
+# Sitemap Location
+Sitemap: https://xoroniq.store/sitemap.xml

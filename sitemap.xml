@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Static Main Pages -->
+  <url>
+    <loc>https://xoroniq.store/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/shop.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/about.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/contact.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/faq.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/order-tracking.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/wishlist.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Category Listing Pages -->
+  <url>
+    <loc>https://xoroniq.store/category/electronics</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/category/home-kitchen</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/category/fashion</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/category/beauty</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/category/accessories</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/category/lifestyle</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <!-- Product Pages & Rich Images -->
+  <url>
+    <loc>https://xoroniq.store/products/xoro-ultra-titanium-smartwatch</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>XORO Ultra Titanium Smartwatch (AMOLED Display) — XORONIQ</image:title>
+      <image:caption>XORO Ultra Titanium Smartwatch (AMOLED Display) available at XORONIQ.store for ₹1499</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/products/aura-pods-pro-anc-earbuds</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Aura Pods Pro Active Noise Cancelling Earbuds — XORONIQ</image:title>
+      <image:caption>Aura Pods Pro Active Noise Cancelling Earbuds available at XORONIQ.store for ₹1199</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/products/lumina-touch-desk-lamp-wireless-charger</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Lumina Minimalist Touch Desk Lamp with Wireless Charger — XORONIQ</image:title>
+      <image:caption>Lumina Minimalist Touch Desk Lamp with Wireless Charger available at XORONIQ.store for ₹849</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/products/aegis-carbon-rfid-slim-wallet</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Aegis Carbon RFID-Shielded Slim Bifold Wallet — XORONIQ</image:title>
+      <image:caption>Aegis Carbon RFID-Shielded Slim Bifold Wallet available at XORONIQ.store for ₹499</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/products/radiance-boost-vitamin-c-serum</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1608248597359-bb5c249a5b39?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Radiance Boost 20% Vitamin C + Hyaluronic Face Serum — XORONIQ</image:title>
+      <image:caption>Radiance Boost 20% Vitamin C + Hyaluronic Face Serum available at XORONIQ.store for ₹599</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/products/hydrovibe-insulated-thermal-flask</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>HydroVibe 1000ml Thermal Vacuum Insulated Flask — XORONIQ</image:title>
+      <image:caption>HydroVibe 1000ml Thermal Vacuum Insulated Flask available at XORONIQ.store for ₹699</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/products/nomad-explorer-travel-organizer</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Nomad Explorer Waterproof Tech &amp; Travel Organizer — XORONIQ</image:title>
+      <image:caption>Nomad Explorer Waterproof Tech &amp; Travel Organizer available at XORONIQ.store for ₹599</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/products/zenith-pro-tpe-yoga-mat</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Zenith Pro Dual-Color Non-Slip TPE Yoga Mat (6mm) — XORONIQ</image:title>
+      <image:caption>Zenith Pro Dual-Color Non-Slip TPE Yoga Mat (6mm) available at XORONIQ.store for ₹899</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Store Policy Pages -->
+  <url>
+    <loc>https://xoroniq.store/policies/shipping.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/policies/returns.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/policies/privacy.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/policies/terms.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://xoroniq.store/policies/cancellation.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>

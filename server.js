@@ -123,10 +123,49 @@ app.post("/api/verify-payment", (req, res) => {
     }
 });
 
+// ─────────────────────────────────────────────
+// CLEAN SEO URL REWRITES & ROUTING
+// ─────────────────────────────────────────────
+
+// Product clean URLs: /products/:slug or /product/:slug
+app.get(["/products/:slug", "/product/:slug"], (req, res) => {
+    res.sendFile(path.join(__dirname, "product.html"));
+});
+
+// Category clean URLs: /category/:slug
+app.get("/category/:slug", (req, res) => {
+    res.sendFile(path.join(__dirname, "shop.html"));
+});
+
+// Static clean page rewrites
+app.get("/about", (req, res) => res.sendFile(path.join(__dirname, "about.html")));
+app.get("/contact", (req, res) => res.sendFile(path.join(__dirname, "contact.html")));
+app.get("/faq", (req, res) => res.sendFile(path.join(__dirname, "faq.html")));
+app.get("/shop", (req, res) => res.sendFile(path.join(__dirname, "shop.html")));
+app.get("/cart", (req, res) => res.sendFile(path.join(__dirname, "cart.html")));
+app.get("/checkout", (req, res) => res.sendFile(path.join(__dirname, "checkout.html")));
+app.get("/wishlist", (req, res) => res.sendFile(path.join(__dirname, "wishlist.html")));
+app.get("/order-tracking", (req, res) => res.sendFile(path.join(__dirname, "order-tracking.html")));
+app.get("/account", (req, res) => res.sendFile(path.join(__dirname, "account.html")));
+app.get("/login", (req, res) => res.sendFile(path.join(__dirname, "login.html")));
+app.get("/register", (req, res) => res.sendFile(path.join(__dirname, "register.html")));
+
+// Policy clean URLs
+app.get("/shipping-policy", (req, res) => res.sendFile(path.join(__dirname, "policies", "shipping.html")));
+app.get("/return-policy", (req, res) => res.sendFile(path.join(__dirname, "policies", "returns.html")));
+app.get("/privacy-policy", (req, res) => res.sendFile(path.join(__dirname, "policies", "privacy.html")));
+app.get("/terms", (req, res) => res.sendFile(path.join(__dirname, "policies", "terms.html")));
+app.get("/cancellation-policy", (req, res) => res.sendFile(path.join(__dirname, "policies", "cancellation.html")));
+
 // Serve static frontend files from current workspace directory
 app.use(express.static(path.join(__dirname)));
 
+// 404 handler
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, "404.html"));
+});
+
 // Start Express server
 app.listen(PORT, () => {
-    console.log(`⚡ XORONIQ E-Commerce Server with Razorpay API running on http://localhost:${PORT}`);
+    console.log(`⚡ XORONIQ E-Commerce Server with Razorpay API & Clean SEO Routing running on http://localhost:${PORT}`);
 });
